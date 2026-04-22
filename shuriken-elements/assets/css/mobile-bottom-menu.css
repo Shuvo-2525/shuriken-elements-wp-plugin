@@ -1,0 +1,578 @@
+/* Mobile Bottom Menu Base Container */
+.shuriken-mobile-bottom-menu-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    background-color: var(--shuriken-mbm-bg-color, #ffffff);
+    box-shadow: var(--shuriken-mbm-box-shadow, 0 -2px 10px rgba(0,0,0,0.1));
+    border-radius: var(--shuriken-mbm-border-radius, 0);
+    padding: var(--shuriken-mbm-padding, 10px 0);
+    /* Hidden on desktop by default, controlled via Elementor responsive options */
+}
+
+/* Grid Layout for items */
+.shuriken-mbm-grid {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.shuriken-mbm-item {
+    text-align: center;
+    flex: 1;
+}
+
+.shuriken-mbm-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--shuriken-mbm-item-color, #333333);
+    padding: var(--shuriken-mbm-item-padding, 5px);
+    transition: color 0.3s ease;
+}
+
+.shuriken-mbm-link:hover,
+.shuriken-mbm-link:active,
+.shuriken-mbm-link:focus,
+.shuriken-mbm-item.active .shuriken-mbm-link {
+    color: var(--shuriken-mbm-item-active-color, #0073aa);
+}
+
+.shuriken-mbm-icon {
+    font-size: var(--shuriken-mbm-icon-size, 20px);
+    margin-bottom: var(--shuriken-mbm-icon-spacing, 4px);
+    display: flex;
+    position: relative;
+}
+
+.shuriken-mbm-icon svg {
+    width: var(--shuriken-mbm-icon-size, 20px);
+    height: var(--shuriken-mbm-icon-size, 20px);
+    fill: currentColor;
+}
+
+.shuriken-mbm-label {
+    /* Elementor typography will apply here */
+    font-size: var(--shuriken-mbm-label-size, 12px);
+}
+
+/* Cart Badge */
+.shuriken-mbm-cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: var(--shuriken-mbm-badge-bg, #ff0000);
+    color: var(--shuriken-mbm-badge-color, #ffffff);
+    font-size: var(--shuriken-mbm-badge-size, 10px);
+    font-weight: bold;
+    border-radius: 50%;
+    padding: 2px 5px;
+    min-width: 16px;
+    text-align: center;
+    line-height: 1;
+}
+
+/* Support for items with icon position 'left' or 'right' */
+.shuriken-mbm-link.icon-pos-left {
+    flex-direction: row;
+    justify-content: center;
+}
+.shuriken-mbm-link.icon-pos-left .shuriken-mbm-icon {
+    margin-bottom: 0;
+    margin-right: var(--shuriken-mbm-icon-spacing, 4px);
+}
+
+.shuriken-mbm-link.icon-pos-right {
+    flex-direction: row-reverse;
+    justify-content: center;
+}
+.shuriken-mbm-link.icon-pos-right .shuriken-mbm-icon {
+    margin-bottom: 0;
+    margin-left: var(--shuriken-mbm-icon-spacing, 4px);
+}
+
+/* -------------------------------------------------------------
+ * Sidebar and Drawer UI
+ * ------------------------------------------------------------- */
+.shuriken-mbm-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.shuriken-mbm-overlay.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar Specifics */
+.shuriken-mbm-sidebar {
+    position: fixed;
+    top: 0;
+    right: -350px;
+    width: 350px;
+    max-width: 90vw;
+    height: 100vh;
+    background: #fff;
+    z-index: 10001;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+}
+
+.shuriken-mbm-sidebar.is-active {
+    right: 0;
+}
+
+/* Drawer Specifics */
+.shuriken-mbm-drawer {
+    position: fixed;
+    bottom: -100vh;
+    left: 0;
+    width: 100%;
+    max-height: 80vh;
+    background: #fff;
+    z-index: 10001;
+    transition: bottom 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.15);
+}
+
+.shuriken-mbm-drawer.is-active {
+    bottom: 0;
+}
+
+/* UI Shared Internals */
+.shuriken-mbm-ui-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ebebeb;
+}
+
+.shuriken-mbm-ui-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.shuriken-mbm-close-ui {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.shuriken-mbm-ui-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* WooCommerce mini-cart adjustments inside our UI */
+.shuriken-mbm-ui-body .widget_shopping_cart_content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item {
+    display: block;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--shuriken-mbm-cart-item-border, #f0f0f0);
+    position: relative;
+    min-height: 105px; /* ensuring space for floated img */
+}
+
+/* Clearfix for floated image */
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item > a:not(.remove) {
+    display: block;
+    color: var(--shuriken-mbm-item-color, #222);
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.4;
+    text-decoration: none;
+    padding-right: 30px; /* Space for absolute remove button */
+    word-break: break-word;
+    margin-bottom: 10px;
+    transition: color 0.2s ease;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item > a:not(.remove):hover {
+    color: var(--shuriken-mbm-item-active-color, #000);
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item a.remove {
+    position: absolute;
+    top: 20px;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    background: #fcebeb;
+    color: #ff4d4f !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item a.remove:hover {
+    background: #ff4d4f;
+    color: #fff !important;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item img {
+    float: left;
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    margin-right: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item .quantity {
+    display: block;
+    font-size: 13px;
+    color: #777;
+    margin-top: 5px;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart__total {
+    border-top: 2px solid var(--shuriken-mbm-cart-item-border, #f0f0f0);
+    padding: 15px 0;
+    text-align: center;
+    font-size: 18px;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart__buttons .button {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    background-color: #eee;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.shuriken-mbm-ui-body .woocommerce-mini-cart__buttons .button.checkout {
+    background-color: var(--shuriken-mbm-cart-btn-bg, #0073aa);
+    color: var(--shuriken-mbm-cart-btn-color, #ffffff);
+}
+
+/* Individual Button Customization */
+.shuriken-mbm-sidebar .woocommerce-mini-cart__buttons .button:not(.checkout),
+.shuriken-mbm-drawer .woocommerce-mini-cart__buttons .button:not(.checkout) {
+    background-color: var(--shuriken-mbm-vc-bg, #eeeeee);
+    color: var(--shuriken-mbm-vc-color, #333333);
+}
+
+/* Visibility logic for View Cart */
+.shuriken-mbm-hide-view-cart .woocommerce-mini-cart__buttons .button:not(.checkout) {
+    display: none !important;
+}
+
+.shuriken-mbm-hide-view-cart .woocommerce-mini-cart__buttons {
+    gap: 0;
+}
+
+/* -------------------------------------------------------------
+ * Quantity Adjuster
+ * ------------------------------------------------------------- */
+.shuriken-mbm-qty-container {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--shuriken-mbm-qty-gap, 8px);
+    background: var(--shuriken-mbm-qty-bg, transparent);
+    border: 1px solid var(--shuriken-mbm-qty-border-color, transparent);
+    border-radius: var(--shuriken-mbm-qty-radius, 4px);
+    margin-top: 8px;
+    padding: var(--shuriken-mbm-qty-padding, 0);
+}
+
+.shuriken-mbm-qty-btn {
+    width: var(--shuriken-mbm-qty-btn-size, 30px);
+    height: var(--shuriken-mbm-qty-btn-size, 30px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--shuriken-mbm-qty-btn-border, #e0e0e0);
+    border-radius: var(--shuriken-mbm-qty-btn-radius, 8px);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    transition: all 0.2s ease;
+    user-select: none;
+    font-weight: 600;
+}
+
+.shuriken-mbm-qty-btn.plus {
+    background: var(--shuriken-mbm-qty-plus-bg, #000);
+    color: var(--shuriken-mbm-qty-plus-color, #fff);
+    border-color: var(--shuriken-mbm-qty-plus-border, #000);
+}
+
+.shuriken-mbm-qty-btn.minus {
+    background: var(--shuriken-mbm-qty-minus-bg, #fff);
+    color: var(--shuriken-mbm-qty-minus-color, #333);
+    border-color: var(--shuriken-mbm-qty-minus-border, #e0e0e0);
+}
+
+.shuriken-mbm-qty-btn:hover {
+    opacity: 0.8;
+}
+
+.shuriken-mbm-qty-val {
+    font-weight: 700;
+    font-size: var(--shuriken-mbm-qty-val-size, 15px);
+    min-width: 24px;
+    text-align: center;
+    color: var(--shuriken-mbm-qty-val-color, #333);
+}
+
+.shuriken-mbm-qty-price {
+    font-size: 13px;
+    color: #888;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+/* Hide default quantity if it still appears */
+.shuriken-mbm-ui-body .woocommerce-mini-cart-item .quantity {
+    display: none;
+}
+
+/* -------------------------------------------------------------
+ * Search Overlay UI
+ * ------------------------------------------------------------- */
+.shuriken-mbm-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--shuriken-mbm-search-ui-bg-color, rgba(255, 255, 255, 0.95));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10002;
+    display: flex;
+    flex-direction: column;
+}
+
+.shuriken-mbm-search-header {
+    text-align: right;
+    padding: 20px;
+}
+
+.shuriken-mbm-close-search {
+    background: var(--shuriken-mbm-search-close-bg, #eee);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--shuriken-mbm-search-close-color, #333);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+.shuriken-mbm-close-search:hover {
+    transform: rotate(90deg);
+    background-color: #ddd;
+}
+
+.shuriken-mbm-search-container {
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.shuriken-mbm-search-form {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.shuriken-mbm-search-field-group {
+    display: flex;
+    align-items: center;
+    background-color: var(--shuriken-mbm-search-input-bg, #f5f5f5);
+    border-radius: var(--shuriken-mbm-search-field-radius, 50px);
+    padding: 5px 5px 5px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.shuriken-mbm-search-field-group:focus-within {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    background-color: #fff;
+    border-color: #0073aa;
+}
+
+.shuriken-mbm-search-input {
+    flex-grow: 1;
+    padding: 12px 0;
+    font-size: 16px;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--shuriken-mbm-search-input-color, #333);
+    outline: none;
+    line-height: 1;
+}
+
+.shuriken-mbm-search-submit {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    background-color: #0073aa;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 10px rgba(0,115,170,0.3);
+}
+
+.shuriken-mbm-search-submit:hover {
+    background-color: #005177;
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0,115,170,0.4);
+}
+
+.shuriken-mbm-search-submit:active {
+    transform: scale(0.95);
+}
+
+.shuriken-mbm-search-submit i {
+    font-size: 16px;
+}
+
+.shuriken-mbm-search-results {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: var(--shuriken-mbm-search-results-bg, transparent);
+    border-radius: 12px;
+    padding: 10px 0;
+}
+
+.shuriken-search-result-item {
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #eee;
+}
+
+.shuriken-search-result-item:last-child {
+    border-bottom: none;
+}
+
+.shuriken-search-result-item a {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    text-decoration: none;
+    color: var(--shuriken-mbm-search-results-color, #333);
+}
+
+.shuriken-search-result-item:hover {
+    background-color: var(--shuriken-mbm-search-results-hover-bg, #f9f9f9);
+}
+
+.shuriken-search-result-item img, .shuriken-search-no-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+.shuriken-search-no-thumb {
+    background-color: #eee;
+}
+
+.shuriken-search-item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.shuriken-search-item-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.shuriken-search-item-info .price {
+    font-size: 14px;
+    color: #666;
+}
+
+.shuriken-mbm-search-loading, .shuriken-mbm-search-no-results {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
+
+/* -------------------------------------------------------------
+ * Responsive Visibility
+ * ------------------------------------------------------------- */
+@media (min-width: 1025px) {
+    .shuriken-mbm-hide-desktop { display: none !important; }
+}
+@media (min-width: 768px) and (max-width: 1024px) {
+    .shuriken-mbm-hide-tablet { display: none !important; }
+}
+@media (max-width: 767px) {
+    .shuriken-mbm-hide-mobile { display: none !important; }
+}

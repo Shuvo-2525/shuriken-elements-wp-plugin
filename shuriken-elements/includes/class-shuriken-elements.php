@@ -137,6 +137,7 @@ class Class_Shuriken_Elements {
 	 */
 	public function widget_styles() {
 		wp_register_style( 'shuriken-mobile-bottom-menu', SHURIKEN_ELEMENTS_URL . 'assets/css/mobile-bottom-menu.css', [], '1.0.0' );
+		wp_register_style( 'shuriken-popup-checkout', SHURIKEN_ELEMENTS_URL . 'assets/css/popup-checkout.css', [], '1.0.0' );
 	}
 
 	/**
@@ -148,6 +149,7 @@ class Class_Shuriken_Elements {
 	 */
 	public function widget_scripts() {
 		wp_register_script( 'shuriken-mobile-bottom-menu', SHURIKEN_ELEMENTS_URL . 'assets/js/mobile-bottom-menu.js', [ 'jquery', 'elementor-frontend' ], '1.0.0', true );
+		wp_register_script( 'shuriken-popup-checkout', SHURIKEN_ELEMENTS_URL . 'assets/js/popup-checkout.js', [ 'jquery', 'elementor-frontend' ], '1.0.0', true );
 
         wp_localize_script( 'shuriken-mobile-bottom-menu', 'shuriken_obj', [
             'ajax_url' => admin_url( 'admin-ajax.php' ),
@@ -193,6 +195,10 @@ class Class_Shuriken_Elements {
 		// Mobile Bottom Menu
 		require_once( $widgets_path . 'class-mobile-bottom-menu.php' );
 		$widgets_manager->register( new \ShurikenElements\Widgets\Mobile_Bottom_Menu() );
+
+		// Popup Checkout
+		require_once( $widgets_path . 'class-popup-checkout.php' );
+		$widgets_manager->register( new \ShurikenElements\Widgets\Popup_Checkout() );
 
 	}
 

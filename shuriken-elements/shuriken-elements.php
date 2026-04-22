@@ -140,12 +140,20 @@ final class Shuriken_Elements_Plugin {
 	private function includes() {
 		require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-elements.php';
 		require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-admin-menu.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-checkout-field-editor.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-wc-checkout-fields.php';
         
         // Initialize core functionality
 		\ShurikenElements\Class_Shuriken_Elements::instance();
         
         // Initialize Admin menu
         \ShurikenElements\Admin\Class_Admin_Menu::instance();
+
+        // Initialize Checkout Field Editor Admin
+        \ShurikenElements\Admin\Class_Checkout_Field_Editor::instance();
+
+        // Initialize WooCommerce Frontend Checkout Fields logic
+        \ShurikenElements\Class_Shuriken_WC_Checkout_Fields::instance();
 	}
 
 	/**

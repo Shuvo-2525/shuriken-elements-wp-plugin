@@ -1,0 +1,167 @@
+/**
+ * Popup Checkout Widget Styles
+ */
+
+ /* Popup Overlay */
+ .shuriken-popup-checkout-overlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100vw;
+     height: 100vh;
+     background-color: rgba(0, 0, 0, 0.6);
+     backdrop-filter: blur(8px);
+     -webkit-backdrop-filter: blur(8px);
+     z-index: 999998;
+     display: none;
+     opacity: 0;
+     transition: opacity 0.3s ease;
+ }
+ 
+ .shuriken-popup-checkout-overlay.active {
+     opacity: 1;
+ }
+ 
+ /* Popup Container */
+ .shuriken-popup-checkout-container {
+     position: fixed;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -45%) scale(0.95);
+     width: 90%;
+     max-width: 900px;
+     max-height: 90vh;
+     background: #ffffff;
+     border-radius: 20px;
+     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+     z-index: 999999;
+     display: none;
+     opacity: 0;
+     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+     display: flex;
+     flex-direction: column;
+     overflow: hidden;
+ }
+ 
+ .shuriken-popup-checkout-container.active {
+     transform: translate(-50%, -50%) scale(1);
+     opacity: 1;
+ }
+ 
+ /* Header */
+ .shuriken-popup-checkout-header {
+     padding: 20px 30px;
+     border-bottom: 1px solid #eaeaea;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     background: #fdfdfd;
+ }
+ 
+ .shuriken-popup-checkout-title {
+     margin: 0;
+     font-size: 1.5rem;
+     font-weight: 600;
+     color: #1a1a1a;
+ }
+ 
+ /* Close Button */
+ .shuriken-popup-close {
+     background: none;
+     border: none;
+     font-size: 28px;
+     line-height: 1;
+     color: #666;
+     cursor: pointer;
+     padding: 0;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     width: 40px;
+     height: 40px;
+     border-radius: 50%;
+     transition: background-color 0.2s ease, color 0.2s ease;
+ }
+ 
+ .shuriken-popup-close:hover {
+     background-color: #f5f5f5;
+     color: #ff4d4f;
+ }
+ 
+ /* Body (Scrollable area for WooCommerce form) */
+ .shuriken-popup-checkout-body {
+     padding: 30px;
+     overflow-y: auto;
+     flex-grow: 1;
+     -webkit-overflow-scrolling: touch;
+ }
+ 
+ /* Custom Scrollbar for Body */
+ .shuriken-popup-checkout-body::-webkit-scrollbar {
+     width: 8px;
+ }
+ .shuriken-popup-checkout-body::-webkit-scrollbar-track {
+     background: transparent;
+ }
+ .shuriken-popup-checkout-body::-webkit-scrollbar-thumb {
+     background: #c1c1c1;
+     border-radius: 10px;
+ }
+ .shuriken-popup-checkout-body::-webkit-scrollbar-thumb:hover {
+     background: #a8a8a8;
+ }
+ 
+ /* Loading State */
+ .shuriken-popup-checkout-container.loading::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(255, 255, 255, 0.8);
+     backdrop-filter: blur(4px);
+     z-index: 10;
+ }
+ 
+ .shuriken-popup-checkout-container.loading::after {
+     content: '';
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     width: 40px;
+     height: 40px;
+     margin-top: -20px;
+     margin-left: -20px;
+     border: 3px solid #f3f3f3;
+     border-top: 3px solid #3498db;
+     border-radius: 50%;
+     animation: shuriken-spin 1s linear infinite;
+     z-index: 11;
+ }
+ 
+ @keyframes shuriken-spin {
+     0% { transform: rotate(0deg); }
+     100% { transform: rotate(360deg); }
+ }
+ 
+ /* Responsive tweaks for WC form inside popup */
+ @media (max-width: 768px) {
+     .shuriken-popup-checkout-container {
+         width: 100%;
+         height: 100%;
+         max-height: 100vh;
+         border-radius: 0;
+         transform: translate(-50%, 0) scale(1);
+         top: 100%;
+         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+     }
+     
+     .shuriken-popup-checkout-container.active {
+         transform: translate(-50%, -100%) scale(1);
+     }
+     
+     .shuriken-popup-checkout-body {
+         padding: 20px 15px;
+     }
+ }

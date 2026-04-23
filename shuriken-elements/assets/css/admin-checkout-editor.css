@@ -449,3 +449,130 @@
 .shuriken-spinner.is-active {
     display: inline-block;
 }
+
+/* Split Layout */
+.shuriken-editor-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1200px) {
+    .shuriken-editor-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Live Preview Panel */
+.shuriken-preview-panel {
+    background: var(--shuriken-surface);
+    border-radius: var(--shuriken-radius);
+    box-shadow: var(--shuriken-shadow);
+    border: 1px solid var(--shuriken-border);
+    overflow: hidden;
+    position: sticky;
+    top: 40px;
+}
+
+.shuriken-preview-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--shuriken-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9fafb;
+}
+
+.shuriken-preview-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.shuriken-preview-badge {
+    background: var(--shuriken-primary);
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.shuriken-preview-body {
+    padding: 20px;
+    background: #fdfdfd;
+    min-height: 400px;
+}
+
+/* Mock WooCommerce Form Styles in Preview */
+.shuriken-preview-body .woocommerce form .form-row {
+    padding: 8px;
+    margin: 0 0 10px;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.shuriken-preview-body .woocommerce form .form-row:hover {
+    border-color: var(--shuriken-primary);
+    background: #f8fafc;
+}
+
+.shuriken-preview-body .woocommerce form .form-row.ui-sortable-helper {
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid var(--shuriken-primary);
+}
+
+.shuriken-preview-body .woocommerce form .form-row label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a1a1a;
+}
+
+.shuriken-preview-body .woocommerce form .form-row input[type="text"],
+.shuriken-preview-body .woocommerce form .form-row input[type="email"],
+.shuriken-preview-body .woocommerce form .form-row input[type="tel"],
+.shuriken-preview-body .woocommerce form .form-row textarea,
+.shuriken-preview-body .woocommerce form .form-row select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    box-sizing: border-box;
+    font-size: 15px;
+    pointer-events: none; /* Prevent interacting with inputs in preview */
+}
+
+.shuriken-preview-body .woocommerce form .form-row-first {
+    width: 47%;
+    float: left;
+}
+
+.shuriken-preview-body .woocommerce form .form-row-last {
+    width: 47%;
+    float: right;
+}
+
+.shuriken-preview-body .woocommerce form .form-row-wide {
+    clear: both;
+}
+
+.shuriken-preview-body .col2-set::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.shuriken-preview-body h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    margin-top: 0;
+    color: #1a1a1a;
+}

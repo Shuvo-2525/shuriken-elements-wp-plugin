@@ -114,6 +114,15 @@ class Class_Checkout_Field_Editor {
                 'required' => false,
                 'priority' => 10,
             ];
+        } elseif ( 'coupon' === $section ) {
+            $fields['coupon_code'] = [
+                'type' => 'text',
+                'label' => __('Have a coupon?', 'woocommerce'),
+                'class' => ['form-row-wide'],
+                'placeholder' => __('Coupon code', 'woocommerce'),
+                'required' => false,
+                'priority' => 10,
+            ];
         }
 
         // Format for our UI
@@ -162,7 +171,7 @@ class Class_Checkout_Field_Editor {
         }
 
         // Process sections
-        $sections = ['billing', 'shipping', 'additional'];
+        $sections = ['billing', 'shipping', 'additional', 'coupon'];
         foreach ( $sections as $section ) {
             if ( isset( $fields_data[$section] ) && is_array( $fields_data[$section] ) ) {
                 
@@ -212,6 +221,7 @@ class Class_Checkout_Field_Editor {
         delete_option( 'shuriken_wc_fields_billing' );
         delete_option( 'shuriken_wc_fields_shipping' );
         delete_option( 'shuriken_wc_fields_additional' );
+        delete_option( 'shuriken_wc_fields_coupon' );
 
         wp_send_json_success();
     }

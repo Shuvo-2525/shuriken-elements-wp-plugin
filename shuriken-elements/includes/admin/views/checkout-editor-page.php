@@ -121,16 +121,72 @@ function shuriken_render_tab_content( $section_id, $fields_data ) {
         </div>
     </div>
 
-    <div class="shuriken-tabs">
-        <button type="button" class="shuriken-tab-link active" data-target="tab-billing"><?php esc_html_e('Billing Fields', 'shuriken-elements'); ?></button>
-        <button type="button" class="shuriken-tab-link" data-target="tab-shipping"><?php esc_html_e('Shipping Fields', 'shuriken-elements'); ?></button>
-        <button type="button" class="shuriken-tab-link" data-target="tab-additional"><?php esc_html_e('Additional Fields', 'shuriken-elements'); ?></button>
+    <div class="shuriken-editor-layout">
+        <div class="shuriken-editor-left-panel">
+            <div class="shuriken-tabs">
+                <button type="button" class="shuriken-tab-link active" data-target="tab-billing"><?php esc_html_e('Billing Fields', 'shuriken-elements'); ?></button>
+                <button type="button" class="shuriken-tab-link" data-target="tab-shipping"><?php esc_html_e('Shipping Fields', 'shuriken-elements'); ?></button>
+                <button type="button" class="shuriken-tab-link" data-target="tab-additional"><?php esc_html_e('Additional Fields', 'shuriken-elements'); ?></button>
+                <button type="button" class="shuriken-tab-link" data-target="tab-coupon"><?php esc_html_e('Coupon Fields', 'shuriken-elements'); ?></button>
+            </div>
+
+            <?php shuriken_render_tab_content('tab-billing', $this->get_fields('billing')); ?>
+            <?php shuriken_render_tab_content('tab-shipping', $this->get_fields('shipping')); ?>
+            <?php shuriken_render_tab_content('tab-additional', $this->get_fields('additional')); ?>
+            <?php shuriken_render_tab_content('tab-coupon', $this->get_fields('coupon')); ?>
+        </div>
+
+        <div class="shuriken-editor-right-panel shuriken-preview-panel">
+            <div class="shuriken-preview-header">
+                <h3><?php esc_html_e('Live Preview', 'shuriken-elements'); ?></h3>
+                <span class="shuriken-preview-badge"><?php esc_html_e('Popup Style', 'shuriken-elements'); ?></span>
+            </div>
+            <div class="shuriken-preview-body">
+                <!-- Mocking Popup Checkout Structure for styling inheritance -->
+                <div class="shuriken-popup-checkout-container" style="position:relative; transform:none; top:auto; left:auto; width:100%; max-height:none; opacity:1; display:flex; box-shadow:none;">
+                    <div class="shuriken-popup-checkout-body">
+                        <div class="woocommerce">
+                            <form name="checkout" method="post" class="checkout woocommerce-checkout" action="#">
+                                <!-- We'll populate this with JS -->
+                                <div id="customer_details" class="col2-set">
+                                    <div class="col-1">
+                                        <div class="woocommerce-billing-fields">
+                                            <h3><?php esc_html_e('Billing details', 'woocommerce'); ?></h3>
+                                            <div class="woocommerce-billing-fields__field-wrapper" id="preview-billing-fields"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="woocommerce-shipping-fields">
+                                            <h3 id="ship-to-different-address">
+                                                <label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox" style="display:flex; align-items:center; gap:8px;">
+                                                    <input id="ship-to-different-address-checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox input-checkbox" checked type="checkbox" name="ship_to_different_address" value="1"> 
+                                                    <span><?php esc_html_e('Ship to a different address?', 'woocommerce'); ?></span>
+                                                </label>
+                                            </h3>
+                                            <div class="shipping_address">
+                                                <div class="woocommerce-shipping-fields__field-wrapper" id="preview-shipping-fields"></div>
+                                            </div>
+                                        </div>
+                                        <div class="woocommerce-additional-fields" style="margin-top:20px;">
+                                            <h3><?php esc_html_e('Additional information', 'woocommerce'); ?></h3>
+                                            <div class="woocommerce-additional-fields__field-wrapper" id="preview-additional-fields"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mock Coupon Section -->
+                                <div class="checkout_coupon woocommerce-form-coupon" style="margin-top:30px; padding-top:20px; border-top:1px solid #eee;">
+                                    <p><?php esc_html_e('If you have a coupon code, please apply it below.', 'woocommerce'); ?></p>
+                                    <div id="preview-coupon-fields" style="display:flex; gap:10px; align-items:flex-end;"></div>
+                                </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <?php shuriken_render_tab_content('tab-billing', $this->get_fields('billing')); ?>
-    <?php shuriken_render_tab_content('tab-shipping', $this->get_fields('shipping')); ?>
-    <?php shuriken_render_tab_content('tab-additional', $this->get_fields('additional')); ?>
-
 </div>
 
 <!-- Field Edit Modal -->

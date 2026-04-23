@@ -22,6 +22,7 @@
             update: function(event, ui) {
                 var section = $(this).closest('.shuriken-tab-content').attr('id');
                 recalculatePriorities(section);
+                if (typeof renderLivePreview === 'function') renderLivePreview();
             }
         });
 
@@ -38,6 +39,7 @@
             $(this).toggleClass('enabled');
             var isEnabled = $(this).hasClass('enabled');
             $(this).closest('tr').attr('data-enabled', isEnabled ? '1' : '0');
+            if (typeof renderLivePreview === 'function') renderLivePreview();
         });
 
         // Select All Checkboxes
@@ -54,6 +56,7 @@
                 $row.attr('data-enabled', '1');
                 $row.find('.shuriken-status-toggle').addClass('enabled');
             });
+            if (typeof renderLivePreview === 'function') renderLivePreview();
         });
 
         $('.shuriken-bulk-disable').on('click', function() {
@@ -63,6 +66,7 @@
                 $row.attr('data-enabled', '0');
                 $row.find('.shuriken-status-toggle').removeClass('enabled');
             });
+            if (typeof renderLivePreview === 'function') renderLivePreview();
         });
 
         $('.shuriken-bulk-remove').on('click', function() {
@@ -74,6 +78,7 @@
                         $row.remove();
                     }
                 });
+                if (typeof renderLivePreview === 'function') renderLivePreview();
             }
         });
 
@@ -101,8 +106,8 @@
             var showEmail = $row.attr('data-email') !== '0'; // Default to true if not set
             var showOrder = $row.attr('data-order') !== '0';
 
-            $('#f_name').val(name).prop('readonly', !isCustom);
-            $('#f_type').val(type).prop('disabled', !isCustom);
+            $('#f_name').val(name).prop('readonly', false);
+            $('#f_type').val(type).prop('disabled', false);
             $('#f_label').val(label);
             $('#f_placeholder').val(placeholder);
             $('#f_required').prop('checked', required);
@@ -185,12 +190,14 @@
             
             if (currentEditRow) {
                 // Update existing row
-                if(currentEditRow.attr('data-custom') === '1') {
-                    currentEditRow.attr('data-name', name);
-                    currentEditRow.attr('data-type', type);
-                    currentEditRow.find('.col-name').html('<strong>'+name+'</strong>');
-                    currentEditRow.find('.col-type').html('<span class="shuriken-badge type-badge">' + type + '</span><span class="shuriken-badge custom-badge">Custom</span>');
-                }
+                currentEditRow.attr('data-name', name);
+                currentEditRow.attr('data-type', type);
+                currentEditRow.find('.col-name').html('<strong>'+name+'</strong>');
+                
+                var isCustomRow = currentEditRow.attr('data-custom') === '1';
+                var customBadge = isCustomRow ? '<span class="shuriken-badge custom-badge">Custom</span>' : '';
+                currentEditRow.find('.col-type').html('<span class="shuriken-badge type-badge">' + type + '</span>' + customBadge);
+
                 currentEditRow.attr('data-placeholder', placeholder);
                 currentEditRow.attr('data-required', required);
                 currentEditRow.attr('data-class', cssClass);
@@ -223,6 +230,7 @@
             
             $overlay.fadeOut('fast');
             $modal.fadeOut('fast');
+            if (typeof renderLivePreview === 'function') renderLivePreview();
         });
 
         // Save Changes (AJAX)
@@ -232,7 +240,8 @@
             var data = {
                 billing: [],
                 shipping: [],
-                additional: []
+                additional: [],
+                coupon: []
             };
 
             // Loop through each tab and gather data
@@ -264,6 +273,7 @@
             gatherFields('tab-billing', data.billing);
             gatherFields('tab-shipping', data.shipping);
             gatherFields('tab-additional', data.additional);
+            gatherFields('tab-coupon', data.coupon);
 
             var $btn = $(this);
             $btn.prop('disabled', true).text('Saving...');
@@ -318,6 +328,119 @@
                         }
                     }
                 });
+            }
+        });
+
+        // Live Preview Functionality
+        function renderLivePreview() {
+            var sections = {
+                'tab-billing': '#preview-billing-fields',
+                'tab-shipping': '#preview-shipping-fields',
+                'tab-additional': '#preview-additional-fields',
+                'tab-coupon': '#preview-coupon-fields'
+            };
+
+            $.each(sections, function(tabId, containerSelector) {
+                var $container = $(containerSelector);
+                if (!$container.length) return;
+                $container.empty();
+
+                // Get enabled rows
+                var $rows = $('#' + tabId + ' .shuriken-fields-table tbody tr[data-enabled="1"]');
+                
+                $rows.each(function() {
+                    var $row = $(this);
+                    var name = $row.attr('data-name');
+                    var type = $row.attr('data-type');
+                    var label = $row.find('.col-label').text().trim();
+                    var placeholder = $row.attr('data-placeholder') || '';
+                    var required = $row.attr('data-required') === '1';
+                    var cssClass = $row.attr('data-class') || 'form-row-wide';
+
+                    var reqHtml = required ? '&nbsp;<abbr class="required" title="required">*</abbr>' : '';
+                    
+                    var inputHtml = '';
+                    if (type === 'textarea') {
+                        inputHtml = '<textarea name="'+name+'" class="input-text" placeholder="'+placeholder+'"></textarea>';
+                    } else if (type === 'select') {
+                        inputHtml = '<select name="'+name+'" class="select"><option value="">'+(placeholder || 'Select an option...')+'</option></select>';
+                    } else {
+                        var inputType = type;
+                        if (['text', 'email', 'tel'].indexOf(type) === -1) inputType = 'text';
+                        inputHtml = '<input type="'+inputType+'" class="input-text" name="'+name+'" placeholder="'+placeholder+'">';
+                    }
+
+                    var html = `
+                        <p class="form-row ${cssClass}" id="${name}_field" data-source-name="${name}" data-source-tab="${tabId}">
+                            <label class="">${label}${reqHtml}</label>
+                            <span class="woocommerce-input-wrapper">
+                                ${inputHtml}
+                            </span>
+                        </p>
+                    `;
+                    $container.append(html);
+                });
+
+                // Make preview sortable
+                if ($container.hasClass('ui-sortable')) {
+                    $container.sortable('destroy');
+                }
+                
+                $container.sortable({
+                    items: '> .form-row',
+                    cursor: 'grabbing',
+                    update: function(event, ui) {
+                        var $sortedItem = ui.item;
+                        var sourceName = $sortedItem.attr('data-source-name');
+                        var tabId = $sortedItem.attr('data-source-tab');
+                        var newIndex = $sortedItem.index();
+                        
+                        var $tableBody = $('#' + tabId + ' .shuriken-fields-table tbody');
+                        var $targetTr = $tableBody.find('tr[data-name="' + sourceName + '"]');
+                        var currentEnabledIndex = $tableBody.find('tr[data-enabled="1"]').index($targetTr);
+                        
+                        if (newIndex !== currentEnabledIndex) {
+                            $targetTr.detach();
+                            var $newSiblings = $tableBody.find('tr[data-enabled="1"]');
+                            if (newIndex === 0) {
+                                if ($newSiblings.length > 0) {
+                                    $newSiblings.first().before($targetTr);
+                                } else {
+                                    $tableBody.append($targetTr);
+                                }
+                            } else {
+                                $newSiblings.eq(newIndex - 1).after($targetTr);
+                            }
+                        }
+
+                        recalculatePriorities(tabId);
+                    }
+                });
+            });
+        }
+
+        // Initialize Live Preview
+        setTimeout(renderLivePreview, 100);
+
+        // Click on preview field to edit
+        $(document).on('click', '.shuriken-preview-body .form-row', function() {
+            var sourceName = $(this).attr('data-source-name');
+            var tabId = $(this).attr('data-source-tab');
+            
+            // Switch tab
+            $('.shuriken-tab-link[data-target="' + tabId + '"]').click();
+            
+            // Find row and click edit
+            var $row = $('#' + tabId + ' .shuriken-fields-table tbody tr[data-name="' + sourceName + '"]');
+            if ($row.length) {
+                // Scroll to row
+                $row[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Flash effect
+                $row.css('background-color', '#fffbeb');
+                setTimeout(function() { $row.css('background-color', ''); }, 1000);
+                
+                // Click edit
+                $row.find('.shuriken-edit-field').click();
             }
         });
 

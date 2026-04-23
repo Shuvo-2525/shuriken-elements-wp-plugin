@@ -31,6 +31,12 @@ class Class_Shuriken_WC_Checkout_Fields {
 
 		// Display on Thank You page and View Order
 		add_action( 'woocommerce_order_details_after_order_table', [ $this, 'display_custom_fields_in_order_details' ], 20, 1 );
+
+		// Hide Additional Information header if empty
+		add_filter( 'woocommerce_enable_order_notes_field', [ $this, 'filter_order_notes_field' ], 999 );
+
+		// Handle coupon features
+		add_action( 'wp', [ $this, 'handle_coupon_features' ] );
 	}
 
 	/**
@@ -56,6 +62,70 @@ class Class_Shuriken_WC_Checkout_Fields {
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * Hide order notes (Additional Information) header if there are no enabled fields
+	 */
+	public function filter_order_notes_field( $enabled ) {
+		$additional_saved = get_option( 'shuriken_wc_fields_additional' );
+		if ( is_array( $additional_saved ) && ! empty( $additional_saved ) ) {
+			$has_active = false;
+			foreach ( $additional_saved as $settings ) {
+				if ( ! isset( $settings['enabled'] ) || $settings['enabled'] ) {
+					$has_active = true;
+					break;
+				}
+			}
+			if ( ! $has_active ) {
+				return false;
+			}
+		}
+		return $enabled;
+	}
+
+	/**
+	 * Handle coupon enabling/disabling and form rendering
+	 */
+	public function handle_coupon_features() {
+		if ( is_admin() && ! wp_doing_ajax() ) {
+			return;
+		}
+
+		$coupon_saved = get_option( 'shuriken_wc_fields_coupon' );
+		
+		// Check if coupon is disabled in our settings
+		if ( is_array( $coupon_saved ) && isset( $coupon_saved['coupon_code'] ) && isset( $coupon_saved['coupon_code']['enabled'] ) && ! $coupon_saved['coupon_code']['enabled'] ) {
+			add_filter( 'woocommerce_coupons_enabled', '__return_false', 999 );
+			return;
+		}
+
+		// If enabled, remove default WooCommerce toggle and form
+		remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_message', 10 );
+		remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
+		
+		// Output our custom inline coupon form
+		add_action( 'woocommerce_before_checkout_form', [ $this, 'custom_coupon_form_output' ], 10 );
+	}
+
+	/**
+	 * Output custom inline coupon form
+	 */
+	public function custom_coupon_form_output() {
+		$coupon_saved = get_option( 'shuriken_wc_fields_coupon' );
+		$label = isset( $coupon_saved['coupon_code']['label'] ) && ! empty( $coupon_saved['coupon_code']['label'] ) ? $coupon_saved['coupon_code']['label'] : __( 'If you have a coupon code, please apply it below.', 'woocommerce' );
+		$placeholder = isset( $coupon_saved['coupon_code']['placeholder'] ) && ! empty( $coupon_saved['coupon_code']['placeholder'] ) ? $coupon_saved['coupon_code']['placeholder'] : __( 'Coupon code', 'woocommerce' );
+		
+		?>
+		<form class="checkout_coupon woocommerce-form-coupon shuriken-inline-coupon" method="post" style="display:block !important; margin-bottom: 25px;">
+			<p><?php echo esc_html( $label ); ?></p>
+			<div style="display:flex; gap:10px;">
+				<input type="text" name="coupon_code" class="input-text" placeholder="<?php echo esc_attr( $placeholder ); ?>" id="coupon_code" value="" style="flex-grow:1;" />
+				<button type="submit" class="button" name="apply_coupon" value="<?php esc_attr_e( 'Apply coupon', 'woocommerce' ); ?>"><?php esc_html_e( 'Apply coupon', 'woocommerce' ); ?></button>
+			</div>
+			<div class="clear"></div>
+		</form>
+		<?php
 	}
 
 	/**

@@ -52,6 +52,7 @@ class Class_Admin_Menu {
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', [ $this, 'register_admin_menu' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
 	/**
@@ -71,7 +72,34 @@ class Class_Admin_Menu {
 			'dashicons-superhero',                                  // Icon URL or dashicon (generic superhero for now)
 			58                                                      // Position
 		);
+
+        add_submenu_page(
+			'shuriken-elements',
+			esc_html__( 'URL Management', 'shuriken-elements' ),
+			esc_html__( 'URL Management', 'shuriken-elements' ),
+			'manage_options',
+			'shuriken-url-management',
+			[ $this, 'url_management_page_html' ]
+		);
+
+        add_submenu_page(
+			'shuriken-elements',
+			esc_html__( 'Redirect Management', 'shuriken-elements' ),
+			esc_html__( 'Redirect Management', 'shuriken-elements' ),
+			'manage_options',
+			'shuriken-redirect-management',
+			[ $this, 'redirect_management_page_html' ]
+		);
 	}
+
+    /**
+     * Enqueue styles for the new settings page.
+     */
+    public function enqueue_scripts( $hook ) {
+        if ( 'shuriken-elements_page_shuriken-url-management' === $hook || 'shuriken-elements_page_shuriken-redirect-management' === $hook ) {
+            wp_enqueue_style( 'shuriken-admin-checkout-editor', SHURIKEN_ELEMENTS_URL . 'assets/css/admin-checkout-editor.css', [], '1.0.0' );
+        }
+    }
 
 	/**
 	 * Admin Page HTML
@@ -83,5 +111,27 @@ class Class_Admin_Menu {
 	public function admin_page_html() {
 		// Include the view file for the settings page
 		require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/views/settings-page.php';
+	}
+
+    /**
+	 * URL Management Page HTML
+	 *
+	 * @since 1.1.0
+	 *
+	 * @access public
+	 */
+	public function url_management_page_html() {
+		require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/views/url-management-page.php';
+	}
+
+    /**
+	 * Redirect Management Page HTML
+	 *
+	 * @since 1.1.0
+	 *
+	 * @access public
+	 */
+	public function redirect_management_page_html() {
+		require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/views/redirect-management-page.php';
 	}
 }

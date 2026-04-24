@@ -64,8 +64,6 @@
             if (this.$container.find('form.checkout').length === 0) {
                 // Cart must have been empty. Reload the page to properly initialize WooCommerce checkout scripts and form.
                 this.$container.find('.shuriken-popup-checkout-body').html('<div style="padding: 40px; text-align: center; font-family: sans-serif;">Loading secure checkout...</div>');
-                this.$overlay.show();
-                this.$container.show();
                 setTimeout(() => {
                     this.$overlay.addClass('active');
                     this.$container.addClass('active');
@@ -88,8 +86,6 @@
                 return;
             }
 
-            this.$overlay.show();
-            this.$container.show();
             this.$body.css('overflow', 'hidden'); // Prevent background scrolling
 
             // Small delay for CSS transition
@@ -117,11 +113,6 @@
             this.$overlay.removeClass('active');
             this.$container.removeClass('active');
             this.$body.css('overflow', '');
-
-            setTimeout(() => {
-                this.$overlay.hide();
-                this.$container.hide();
-            }, 400); // Matches CSS transition duration
         }
     }
 

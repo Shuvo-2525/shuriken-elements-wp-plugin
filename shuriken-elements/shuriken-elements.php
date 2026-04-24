@@ -5,7 +5,7 @@
  * Plugin URI:  https://shurikenit.com
  * Author:      Mohammad Rafiq Shuvo
  * Author URI:  https://shurikenit.com
- * Version:     1.1.0
+ * Version:     1.2.0
  * Text Domain: shuriken-elements
  *
  * Elementor tested up to: 3.20.0
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'SHURIKEN_ELEMENTS_VERSION', '1.1.0' );
+define( 'SHURIKEN_ELEMENTS_VERSION', '1.2.0' );
 define( 'SHURIKEN_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SHURIKEN_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 
@@ -36,7 +36,7 @@ final class Shuriken_Elements_Plugin {
 	 *
 	 * @var string The plugin version.
 	 */
-	const VERSION = '1.1.0';
+	const VERSION = '1.2.0';
 
 	/**
 	 * Minimum Elementor Version
@@ -141,7 +141,15 @@ final class Shuriken_Elements_Plugin {
 		require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-elements.php';
 		require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-admin-menu.php';
         require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-checkout-field-editor.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-settings-handler.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-admin-post-states.php';
         require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-wc-checkout-fields.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-url-blocker.php';
+        
+        // New Redirect Management Files
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-redirect-cpt.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-redirect-engine.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-redirect-management-ajax.php';
         
         // Initialize core functionality
 		\ShurikenElements\Class_Shuriken_Elements::instance();
@@ -149,11 +157,25 @@ final class Shuriken_Elements_Plugin {
         // Initialize Admin menu
         \ShurikenElements\Admin\Class_Admin_Menu::instance();
 
+        // Initialize Settings Handler
+        \ShurikenElements\Admin\Class_Settings_Handler::instance();
+
+        // Initialize Admin Post States
+        \ShurikenElements\Admin\Class_Admin_Post_States::instance();
+
         // Initialize Checkout Field Editor Admin
         \ShurikenElements\Admin\Class_Checkout_Field_Editor::instance();
 
         // Initialize WooCommerce Frontend Checkout Fields logic
         \ShurikenElements\Class_Shuriken_WC_Checkout_Fields::instance();
+
+        // Initialize URL Blocker
+        \ShurikenElements\Class_Shuriken_URL_Blocker::instance();
+
+        // Initialize Redirect Management
+        \ShurikenElements\Class_Shuriken_Redirect_CPT::instance();
+        \ShurikenElements\Class_Shuriken_Redirect_Engine::instance();
+        \ShurikenElements\Admin\Class_Redirect_Management_Ajax::instance();
 	}
 
 	/**

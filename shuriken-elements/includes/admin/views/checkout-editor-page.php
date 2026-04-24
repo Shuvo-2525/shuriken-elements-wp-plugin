@@ -18,6 +18,7 @@ function shuriken_render_field_row( $field_name, $field_data ) {
     $validate = isset($field_data['validate']) && is_array($field_data['validate']) ? implode(',', $field_data['validate']) : '';
     $show_in_email = isset($field_data['show_in_email']) ? $field_data['show_in_email'] : true;
     $show_in_order = isset($field_data['show_in_order']) ? $field_data['show_in_order'] : true;
+    $position = isset($field_data['position']) ? $field_data['position'] : '';
 
     // Convert class array to string
     $class = '';
@@ -48,7 +49,8 @@ function shuriken_render_field_row( $field_name, $field_data ) {
         data-validate="<?php echo esc_attr($validate); ?>"
         data-email="<?php echo $show_in_email ? '1' : '0'; ?>"
         data-order="<?php echo $show_in_order ? '1' : '0'; ?>"
-        data-class="<?php echo esc_attr($class); ?>">
+        data-class="<?php echo esc_attr($class); ?>"
+        data-position="<?php echo esc_attr($position); ?>">
         
         <td width="20"><span class="shuriken-drag-handle"></span></td>
         <td width="30" class="shuriken-checkbox-wrap"><input type="checkbox" class="shuriken-row-checkbox"></td>
@@ -240,6 +242,18 @@ function shuriken_render_tab_content( $section_id, $fields_data ) {
                         <option value="form-row-last"><?php esc_html_e('Half Width - Right', 'shuriken-elements'); ?></option>
                     </select>
                 </div>
+            </div>
+
+            <div class="shuriken-form-row" id="row_f_position" style="display: none;">
+                <label><?php esc_html_e('Display Position (Coupon Only)', 'shuriken-elements'); ?></label>
+                <select id="f_position">
+                    <option value="woocommerce_before_checkout_form"><?php esc_html_e('Top (Before Checkout Form)', 'shuriken-elements'); ?></option>
+                    <option value="woocommerce_after_checkout_form"><?php esc_html_e('Bottom (After Checkout Form)', 'shuriken-elements'); ?></option>
+                    <option value="inline_before_customer_details"><?php esc_html_e('Inline: Before Customer Details', 'shuriken-elements'); ?></option>
+                    <option value="inline_before_order_review"><?php esc_html_e('Inline: Before Order Review', 'shuriken-elements'); ?></option>
+                    <option value="inline_before_payment_methods"><?php esc_html_e('Inline: Before Payment Methods', 'shuriken-elements'); ?></option>
+                </select>
+                <small><?php esc_html_e('Select where the coupon form should be placed.', 'shuriken-elements'); ?></small>
             </div>
 
             <div class="shuriken-form-row">

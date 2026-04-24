@@ -27,6 +27,19 @@
             }
         }
 
+        // Add padding to body equivalent to menu height so it doesn't overlap footer content
+        function adjustBodyPadding() {
+            var $wrapper = $scope.find('.shuriken-mobile-bottom-menu-wrapper');
+            if ($wrapper.length && $wrapper.is(':visible')) {
+                var menuHeight = $wrapper.outerHeight();
+                $('body').css('padding-bottom', menuHeight + 'px');
+            } else {
+                $('body').css('padding-bottom', '');
+            }
+        }
+        $(window).on('resize', adjustBodyPadding);
+        setTimeout(adjustBodyPadding, 100);
+
         if ( $sidebarTrigger.length && $sidebar.length ) {
             $sidebarTrigger.on('click', function(e) {
                 e.preventDefault();
@@ -190,6 +203,58 @@
 
                 } else {
                     console.error('Shuriken Elements: Cart update failed.', response);
+                    $container.css('opacity', '1').css('pointer-events', 'auto');
+                }
+            }).fail(function() {
+                $container.css('opacity', '1').css('pointer-events', 'auto');
+            });
+        });
+
+        // AJAX Remove Item (Robust Fix)
+        $(document.body).on('click', '.shuriken-mbm-ui-body .woocommerce-mini-cart-item .remove', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation(); // Prevent WC core from doing its buggy hide
+
+            var $btn = $(this);
+            var cartItemKey = $btn.data('cart_item_key');
+            
+            // Sometimes it's inside a data attribute or we can extract it from href
+            if (!cartItemKey) {
+                var href = $btn.attr('href');
+                var match = href ? href.match(/remove_item=([^&]+)/) : null;
+                if (match) {
+                    cartItemKey = match[1];
+                }
+            }
+
+            if (!cartItemKey) return;
+
+            var $container = $btn.closest('.woocommerce-mini-cart-item');
+            $container.css('opacity', '0.5').css('pointer-events', 'none');
+
+            var ajaxUrl = (typeof shuriken_obj !== 'undefined') ? shuriken_obj.ajax_url : ((typeof wc_add_to_cart_params !== 'undefined') ? wc_add_to_cart_params.ajax_url : '/wp-admin/admin-ajax.php');
+            var nonce   = (typeof shuriken_obj !== 'undefined') ? shuriken_obj.nonce : '';
+
+            $.post(ajaxUrl, {
+                action: 'shuriken_update_cart_item_qty',
+                cart_item_key: cartItemKey,
+                new_qty: 0, // 0 removes the item
+                security: nonce
+            }, function(response) {
+                if (response && response.fragments) {
+                    var fragments = response.fragments;
+                    $.each(fragments, function(key, value) {
+                        $(key).replaceWith(value);
+                    });
+                    if ( typeof wc_cart_fragments_params !== 'undefined' ) {
+                        var cart_hash_key = wc_cart_fragments_params.cart_hash_key;
+                        sessionStorage.setItem( wc_cart_fragments_params.fragment_name, JSON.stringify( fragments ) );
+                        if ( response.cart_hash ) {
+                            sessionStorage.setItem( cart_hash_key, response.cart_hash );
+                        }
+                    }
+                    $(document.body).trigger('wc_fragments_refreshed');
+                } else {
                     $container.css('opacity', '1').css('pointer-events', 'auto');
                 }
             }).fail(function() {

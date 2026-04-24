@@ -324,6 +324,15 @@ class Popup_Checkout extends Widget_Base {
         $is_elementor_editor = \Elementor\Plugin::$instance->editor->is_edit_mode();
         $style_display = $is_elementor_editor ? 'display: flex; opacity: 1; position: relative; transform: none; top: 0; left: 0; margin-bottom: 20px;' : '';
         $overlay_style = $is_elementor_editor ? 'display: none;' : '';
+
+        // Force WooCommerce checkout scripts if not on checkout page to make checkout fully robust
+        if ( class_exists( 'WooCommerce' ) && ! is_checkout() && ! $is_elementor_editor ) {
+            wp_enqueue_script( 'wc-checkout' );
+            wp_enqueue_script( 'wc-country-select' );
+            wp_enqueue_script( 'wc-address-i18n' );
+            wp_enqueue_script( 'selectWoo' );
+            wp_enqueue_style( 'select2' );
+        }
 		?>
 		
         <div class="shuriken-popup-checkout-overlay" style="<?php echo esc_attr($overlay_style); ?>"></div>

@@ -105,6 +105,7 @@
             var validateStr = $row.attr('data-validate') || '';
             var showEmail = $row.attr('data-email') !== '0'; // Default to true if not set
             var showOrder = $row.attr('data-order') !== '0';
+            var position = $row.attr('data-position') || 'woocommerce_before_checkout_form';
 
             $('#f_name').val(name).prop('readonly', false);
             $('#f_type').val(type).prop('disabled', false);
@@ -115,6 +116,13 @@
             $('#f_default').val(defaultVal);
             $('#f_email').prop('checked', showEmail);
             $('#f_order').prop('checked', showOrder);
+            $('#f_position').val(position);
+
+            if (name === 'coupon_code') {
+                $('#row_f_position').show();
+            } else {
+                $('#row_f_position').hide();
+            }
 
             // Set validation checkboxes
             $('.f_validate').prop('checked', false);
@@ -151,6 +159,8 @@
             $('#f_name').val(prefix + 'custom_').prop('readonly', false);
             $('#f_type').prop('disabled', false);
             
+            $('#row_f_position').hide();
+            
             $('.shuriken-modal-header h2').text('Add New Field');
             $overlay.fadeIn('fast');
             $modal.fadeIn('fast');
@@ -181,6 +191,7 @@
             var defaultVal = $('#f_default').val().trim();
             var showEmail = $('#f_email').is(':checked') ? '1' : '0';
             var showOrder = $('#f_order').is(':checked') ? '1' : '0';
+            var position = $('#f_position').val();
             
             var validateArray = [];
             $('.f_validate:checked').each(function() {
@@ -205,13 +216,16 @@
                 currentEditRow.attr('data-validate', validateStr);
                 currentEditRow.attr('data-email', showEmail);
                 currentEditRow.attr('data-order', showOrder);
+                if (name === 'coupon_code') {
+                    currentEditRow.attr('data-position', position);
+                }
                 currentEditRow.find('.col-label').text(label);
                 currentEditRow.find('.col-required').html(reqHtml);
             } else {
                 // Add new row to active tab
                 var priority = 999; 
                 var newRow = `
-                    <tr data-name="${name}" data-type="${type}" data-required="${required}" data-enabled="1" data-custom="1" data-priority="${priority}" data-placeholder="${placeholder}" data-class="${cssClass}" data-default="${defaultVal}" data-validate="${validateStr}" data-email="${showEmail}" data-order="${showOrder}">
+                    <tr data-name="${name}" data-type="${type}" data-required="${required}" data-enabled="1" data-custom="1" data-priority="${priority}" data-placeholder="${placeholder}" data-class="${cssClass}" data-default="${defaultVal}" data-validate="${validateStr}" data-email="${showEmail}" data-order="${showOrder}" data-position="${position}">
                         <td width="20"><span class="shuriken-drag-handle"></span></td>
                         <td width="30" class="shuriken-checkbox-wrap"><input type="checkbox" class="shuriken-row-checkbox"></td>
                         <td width="40"><span class="shuriken-status-toggle enabled"></span></td>
@@ -265,7 +279,8 @@
                         default: $row.attr('data-default'),
                         validate: validateArr,
                         show_in_email: $row.attr('data-email') === '1',
-                        show_in_order: $row.attr('data-order') === '1'
+                        show_in_order: $row.attr('data-order') === '1',
+                        position: $row.attr('data-position')
                     });
                 });
             }
@@ -417,6 +432,31 @@
                     }
                 });
             });
+
+            // Move coupon section visually based on position setting
+            var $couponRow = $('#tab-coupon .shuriken-fields-table tbody tr[data-name="coupon_code"]');
+            var $couponPreview = $('.woocommerce-form-coupon');
+            if ($couponRow.length && $couponRow.attr('data-enabled') === '1') {
+                $couponPreview.show();
+                var pos = $couponRow.attr('data-position');
+                var $checkoutForm = $('form.checkout');
+                
+                if (pos === 'woocommerce_before_checkout_form') {
+                    $checkoutForm.before($couponPreview);
+                } else if (pos === 'woocommerce_after_checkout_form') {
+                    $checkoutForm.after($couponPreview);
+                } else if (pos === 'inline_before_customer_details') {
+                    $('#customer_details').before($couponPreview);
+                } else if (pos === 'inline_before_order_review') {
+                    $checkoutForm.append($couponPreview); // Simple append to bottom for now since order review isn't mocked yet, or append to after customer details
+                } else if (pos === 'inline_before_payment_methods') {
+                    $checkoutForm.append($couponPreview);
+                } else {
+                    $checkoutForm.before($couponPreview);
+                }
+            } else {
+                $couponPreview.hide();
+            }
         }
 
         // Initialize Live Preview

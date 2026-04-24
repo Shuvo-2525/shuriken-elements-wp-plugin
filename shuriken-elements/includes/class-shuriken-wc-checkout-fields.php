@@ -104,8 +104,124 @@ class Class_Shuriken_WC_Checkout_Fields {
 		remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_message', 10 );
 		remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
 		
-		// Output our custom inline coupon form
-		add_action( 'woocommerce_before_checkout_form', [ $this, 'custom_coupon_form_output' ], 10 );
+        $position = isset( $coupon_saved['coupon_code']['position'] ) ? $coupon_saved['coupon_code']['position'] : 'woocommerce_before_checkout_form';
+
+        if ( in_array( $position, ['woocommerce_before_checkout_form', 'woocommerce_after_checkout_form'] ) ) {
+            add_action( $position, [ $this, 'custom_coupon_form_output' ], 10 );
+        } else {
+            // Output outside the form first, then we use JS to move it
+            add_action( 'woocommerce_before_checkout_form', [ $this, 'custom_coupon_form_output_inline' ], 10 );
+        }
+            
+        add_action( 'wp_footer', function() use ($position) {
+            ?>
+            <script>
+            jQuery(document).ready(function($) {
+                
+                function moveShurikenCoupon() {
+                    var pos = '<?php echo esc_js($position); ?>';
+                    
+                    if (pos === 'woocommerce_before_checkout_form' || pos === 'woocommerce_after_checkout_form') {
+                        return;
+                    }
+                    
+                    $('.shuriken-inline-coupon-wrapper').each(function() {
+                        var $couponBlock = $(this);
+                        var $wrapper = $couponBlock.closest('.woocommerce');
+                        var $checkoutForm = $wrapper.find('form.checkout');
+                        
+                        // If form isn't found, maybe it's not rendered yet
+                        if (!$checkoutForm.length) return;
+                        
+                        if (pos === 'inline_before_customer_details') {
+                            $checkoutForm.find('#customer_details').before($couponBlock);
+                        } else if (pos === 'inline_before_order_review') {
+                            // Put it before the heading if it exists, otherwise before the table
+                            var $heading = $checkoutForm.find('#order_review_heading');
+                            if ($heading.length) {
+                                $heading.before($couponBlock);
+                            } else {
+                                $checkoutForm.find('#order_review').before($couponBlock);
+                            }
+                        } else if (pos === 'inline_before_payment_methods') {
+                            $checkoutForm.find('#payment').before($couponBlock);
+                        }
+                        
+                        $couponBlock.show();
+                    });
+                }
+
+                // Move on load
+                moveShurikenCoupon();
+                
+                // Move back outside before checkout updates so it isn't destroyed
+                $(document.body).on('update_checkout', function() {
+                    var $couponBlock = $('.shuriken-inline-coupon-wrapper');
+                    var $checkoutForm = $('form.checkout');
+                    if ($couponBlock.length && $checkoutForm.length && $checkoutForm.has($couponBlock).length) {
+                        $checkoutForm.before($couponBlock);
+                        $couponBlock.hide();
+                    }
+                });
+                
+                // Move after checkout updates (AJAX)
+                $(document.body).on('updated_checkout', function() {
+                    moveShurikenCoupon();
+                });
+
+                // Custom AJAX submission since it's a div now, not a form
+                $(document).on('click', '.shuriken-inline-coupon-wrapper button[name="apply_coupon"]', function(e) {
+                    e.preventDefault();
+                    var code = $(this).siblings('input[name="coupon_code"]').val();
+                    if (!code) return;
+                    
+                    var $wrapper = $(this).closest('.woocommerce');
+                    if (typeof wc_checkout_params === 'undefined') return;
+
+                    $wrapper.addClass('processing').block({message: null, overlayCSS: {background: '#fff', opacity: 0.6}});
+
+                    $.ajax({
+                        type: 'POST',
+                        url: wc_checkout_params.wc_ajax_url.toString().replace( '%%endpoint%%', 'apply_coupon' ),
+                        data: {
+                            security: wc_checkout_params.apply_coupon_nonce,
+                            coupon_code: code
+                        },
+                        success: function( response ) {
+                            $('.woocommerce-error, .woocommerce-message').remove();
+                            if ( response ) {
+                                $('form.checkout').before( response );
+                                $wrapper.removeClass('processing').unblock();
+                                $( document.body ).trigger( 'applied_coupon_in_checkout', [ response ] );
+                                $( document.body ).trigger( 'update_checkout', { update_shipping_method: false } );
+                            }
+                        },
+                        error: function() {
+                            $wrapper.removeClass('processing').unblock();
+                        }
+                    });
+                });
+            });
+            </script>
+            <?php
+        }, 999 );
+	}
+
+    public function custom_coupon_form_output_inline() {
+		$coupon_saved = get_option( 'shuriken_wc_fields_coupon' );
+		$label = isset( $coupon_saved['coupon_code']['label'] ) && ! empty( $coupon_saved['coupon_code']['label'] ) ? $coupon_saved['coupon_code']['label'] : __( 'If you have a coupon code, please apply it below.', 'woocommerce' );
+		$placeholder = isset( $coupon_saved['coupon_code']['placeholder'] ) && ! empty( $coupon_saved['coupon_code']['placeholder'] ) ? $coupon_saved['coupon_code']['placeholder'] : __( 'Coupon code', 'woocommerce' );
+		
+		?>
+		<div class="checkout_coupon woocommerce-form-coupon shuriken-inline-coupon-wrapper" style="display:none; margin-bottom: 25px;">
+			<p><?php echo esc_html( $label ); ?></p>
+			<div style="display:flex; gap:10px;">
+				<input type="text" name="coupon_code" class="input-text" placeholder="<?php echo esc_attr( $placeholder ); ?>" value="" style="flex-grow:1;" />
+				<button type="button" class="button" name="apply_coupon"><?php esc_html_e( 'Apply coupon', 'woocommerce' ); ?></button>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -117,14 +233,14 @@ class Class_Shuriken_WC_Checkout_Fields {
 		$placeholder = isset( $coupon_saved['coupon_code']['placeholder'] ) && ! empty( $coupon_saved['coupon_code']['placeholder'] ) ? $coupon_saved['coupon_code']['placeholder'] : __( 'Coupon code', 'woocommerce' );
 		
 		?>
-		<form class="checkout_coupon woocommerce-form-coupon shuriken-inline-coupon" method="post" style="display:block !important; margin-bottom: 25px;">
+		<div class="checkout_coupon woocommerce-form-coupon shuriken-inline-coupon-wrapper" style="display:block !important; margin-bottom: 25px;">
 			<p><?php echo esc_html( $label ); ?></p>
 			<div style="display:flex; gap:10px;">
 				<input type="text" name="coupon_code" class="input-text" placeholder="<?php echo esc_attr( $placeholder ); ?>" id="coupon_code" value="" style="flex-grow:1;" />
-				<button type="submit" class="button" name="apply_coupon" value="<?php esc_attr_e( 'Apply coupon', 'woocommerce' ); ?>"><?php esc_html_e( 'Apply coupon', 'woocommerce' ); ?></button>
+				<button type="button" class="button" name="apply_coupon"><?php esc_html_e( 'Apply coupon', 'woocommerce' ); ?></button>
 			</div>
 			<div class="clear"></div>
-		</form>
+		</div>
 		<?php
 	}
 

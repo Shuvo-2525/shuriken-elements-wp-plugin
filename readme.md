@@ -1,6 +1,6 @@
 # Shuriken Elements
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Author:** Mohammad Rafiq Shuvo
 **Tested up to Elementor:** 3.20.0
 **Requires PHP:** 7.4+
@@ -67,6 +67,18 @@ A professional-grade checkout field manager built directly into your WordPress a
 ---
 
 ## 📋 Changelog
+
+### Version 1.1.0
+*   **New Feature:** Added **Live Preview** to the Checkout Field Editor for real-time visual feedback.
+*   **New Feature:** Added **Coupon Section management** to the Checkout Field Editor.
+*   **New Feature:** Integrated **Drag-and-Drop** support within the Checkout Live Preview panel.
+*   **Improvement:** Implemented **AJAX-based Coupon submission** in Popup Checkout to prevent unwanted page reloads.
+*   **Improvement:** Enhanced **Asset Enqueueing** logic for Popup Checkout, ensuring compatibility across all pages.
+*   **Improvement:** Added **Automatic Body Padding** adjustment for the Mobile Bottom Menu to prevent content overlap.
+*   **Fix:** Resolved **Sidebar Cart Drawer** scrolling and layout issues for better accessibility.
+*   **Fix:** Fixed "Empty Checkout Popup" issue on first load by ensuring fragments are correctly triggered.
+*   **Fix:** Replaced unreliable delete links with a robust **AJAX-based item deletion** handler in the cart drawer.
+*   **Fix:** Optimized **Coupon positioning** logic within the checkout popup flow.
 
 ### Version 1.0.0
 *   **Initial Release:** Core plugin architecture established.

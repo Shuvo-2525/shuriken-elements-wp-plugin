@@ -5,7 +5,7 @@
  * Plugin URI:  https://shurikenit.com
  * Author:      Mohammad Rafiq Shuvo
  * Author URI:  https://shurikenit.com
- * Version:     1.0.0
+ * Version:     1.1.0
  * Text Domain: shuriken-elements
  *
  * Elementor tested up to: 3.20.0
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'SHURIKEN_ELEMENTS_VERSION', '1.0.0' );
+define( 'SHURIKEN_ELEMENTS_VERSION', '1.1.0' );
 define( 'SHURIKEN_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SHURIKEN_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 
@@ -36,7 +36,7 @@ final class Shuriken_Elements_Plugin {
 	 *
 	 * @var string The plugin version.
 	 */
-	const VERSION = '1.0.0';
+	const VERSION = '1.1.0';
 
 	/**
 	 * Minimum Elementor Version

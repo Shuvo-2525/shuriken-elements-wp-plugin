@@ -60,6 +60,34 @@
         }
 
         openPopup() {
+            // Check if checkout form actually exists (WooCommerce hides it if cart was empty on initial load)
+            if (this.$container.find('form.checkout').length === 0) {
+                // Cart must have been empty. Reload the page to properly initialize WooCommerce checkout scripts and form.
+                this.$container.find('.shuriken-popup-checkout-body').html('<div style="padding: 40px; text-align: center; font-family: sans-serif;">Loading secure checkout...</div>');
+                this.$overlay.show();
+                this.$container.show();
+                setTimeout(() => {
+                    this.$overlay.addClass('active');
+                    this.$container.addClass('active');
+                }, 10);
+                
+                $.get(window.location.href, (response) => {
+                    var $html = $(response);
+                    var $newBody = $html.find('.shuriken-popup-checkout-body');
+                    if ($newBody.length && $newBody.find('form.checkout').length > 0) {
+                        this.$container.find('.shuriken-popup-checkout-body').html($newBody.html());
+                        $(document.body).trigger('init_checkout');
+                        $(document.body).trigger('wc_fragments_refreshed');
+                        $(document.body).trigger('update_checkout');
+                    } else {
+                        window.location.reload();
+                    }
+                }).fail(() => {
+                    window.location.reload();
+                });
+                return;
+            }
+
             this.$overlay.show();
             this.$container.show();
             this.$body.css('overflow', 'hidden'); // Prevent background scrolling

@@ -281,6 +281,111 @@
             }
         }
 
+        // Profile Implementation
+        var $profileTrigger = $scope.find('.shuriken-mbm-trigger-profile');
+        var $profileDrawer  = $scope.find('.shuriken-mbm-profile-drawer');
+        var $profileOverlay = $scope.find('.shuriken-mbm-profile-overlay');
+        var $profileContent = $scope.find('.shuriken-mbm-profile-content');
+
+        if ( $profileTrigger.length && $profileDrawer.length ) {
+            $profileTrigger.on('click', function(e) {
+                e.preventDefault();
+                openUI($profileDrawer);
+                $profileOverlay.addClass('is-active');
+                
+                // Load content if not already loaded or if we want to refresh
+                loadProfileContent();
+            });
+        }
+
+        $profileOverlay.on('click', function() {
+            closeUI();
+            $profileOverlay.removeClass('is-active');
+        });
+
+        function loadProfileContent() {
+            $profileContent.html('<div class="shuriken-mbm-loading"><div class="shuriken-mbm-loader"></div></div>');
+
+            $.post(ajaxUrl, {
+                action: 'shuriken_get_account_content',
+                security: nonce
+            }, function(response) {
+                if ( response.success ) {
+                    $profileContent.html(response.data);
+                    initProfileForms();
+                } else {
+                    $profileContent.html('<div class="shuriken-mbm-error">Failed to load content.</div>');
+                }
+            });
+        }
+
+        function initProfileForms() {
+            // Tab switching
+            $profileContent.find('.shuriken-form-tab').on('click', function() {
+                var target = $(this).data('target');
+                $profileContent.find('.shuriken-form-tab').removeClass('active');
+                $(this).addClass('active');
+                $profileContent.find('.shuriken-ajax-form').hide().removeClass('active');
+                $profileContent.find('#' + target).fadeIn(300).addClass('active');
+            });
+
+            // Login AJAX
+            $profileContent.find('#shuriken-login-form').on('submit', function(e) {
+                e.preventDefault();
+                var $form = $(this);
+                var $msg = $form.find('.shuriken-form-message');
+                var $btn = $form.find('button[type="submit"]');
+
+                $msg.html('').removeClass('error success');
+                $btn.prop('disabled', true).addClass('loading');
+
+                $.post(ajaxUrl, {
+                    action: 'shuriken_ajax_login',
+                    username: $form.find('input[name="username"]').val(),
+                    password: $form.find('input[name="password"]').val(),
+                    rememberme: $form.find('input[name="rememberme"]').is(':checked'),
+                    security: $form.find('#shuriken-login-nonce').val()
+                }, function(response) {
+                    if ( response.success ) {
+                        $msg.addClass('success').html(response.data);
+                        // Reload content to show dashboard
+                        setTimeout(loadProfileContent, 1000);
+                    } else {
+                        $msg.addClass('error').html(response.data);
+                        $btn.prop('disabled', false).removeClass('loading');
+                    }
+                });
+            });
+
+            // Register AJAX
+            $profileContent.find('#shuriken-register-form').on('submit', function(e) {
+                e.preventDefault();
+                var $form = $(this);
+                var $msg = $form.find('.shuriken-form-message');
+                var $btn = $form.find('button[type="submit"]');
+
+                $msg.html('').removeClass('error success');
+                $btn.prop('disabled', true).addClass('loading');
+
+                $.post(ajaxUrl, {
+                    action: 'shuriken_ajax_register',
+                    email: $form.find('input[name="email"]').val(),
+                    username: $form.find('input[name="username"]').val(),
+                    password: $form.find('input[name="password"]').val(),
+                    security: $form.find('#shuriken-register-nonce').val()
+                }, function(response) {
+                    if ( response.success ) {
+                        $msg.addClass('success').html(response.data);
+                        // Reload content to show dashboard
+                        setTimeout(loadProfileContent, 1000);
+                    } else {
+                        $msg.addClass('error').html(response.data);
+                        $btn.prop('disabled', false).removeClass('loading');
+                    }
+                });
+            });
+        }
+
         $(document.body).on('wc_fragments_refreshed wc_fragments_loaded', function() {
             updateCartButtonTexts();
         });

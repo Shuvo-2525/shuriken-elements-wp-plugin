@@ -434,6 +434,71 @@ class Mobile_Bottom_Menu extends Widget_Base {
 
 		$this->end_controls_section();
 
+		/* ----------------------------------------------------------------------
+		 * Content Tab - Profile Configuration
+		 * ---------------------------------------------------------------------- */
+		$this->start_controls_section(
+			'section_profile_config',
+			[
+				'label' => esc_html__( 'Profile Configuration', 'shuriken-elements' ),
+				'tab' => Controls_Manager::TAB_CONTENT,
+			]
+		);
+
+		$this->add_control(
+			'show_profile',
+			[
+				'label' => esc_html__( 'Show Profile Icon', 'shuriken-elements' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Show', 'shuriken-elements' ),
+				'label_off' => esc_html__( 'Hide', 'shuriken-elements' ),
+				'return_value' => 'yes',
+				'default' => 'no',
+			]
+		);
+
+        $this->add_control(
+			'profile_order',
+			[
+				'label' => esc_html__( 'Profile Item Order', 'shuriken-elements' ),
+				'type' => Controls_Manager::NUMBER,
+				'default' => 75,
+				'description' => esc_html__( 'Visual position (Higher number = further right)', 'shuriken-elements' ),
+                'condition' => [
+                    'show_profile' => 'yes'
+                ]
+			]
+		);
+
+        $this->add_control(
+			'profile_label',
+			[
+				'label' => esc_html__( 'Profile Label Title', 'shuriken-elements' ),
+				'type' => Controls_Manager::TEXT,
+				'default' => esc_html__( 'Account', 'shuriken-elements' ),
+                'condition' => [
+                    'show_profile' => 'yes'
+                ]
+			]
+		);
+
+        $this->add_control(
+			'profile_item_icon',
+			[
+				'label' => esc_html__( 'Profile Icon', 'shuriken-elements' ),
+				'type' => Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-user',
+					'library' => 'fa-solid',
+				],
+                'condition' => [
+                    'show_profile' => 'yes'
+                ]
+			]
+		);
+
+		$this->end_controls_section();
+
         /* ----------------------------------------------------------------------
 		 * Content Tab - Visibility
 		 * ---------------------------------------------------------------------- */
@@ -1289,6 +1354,22 @@ class Mobile_Bottom_Menu extends Widget_Base {
 					</li>
                     <?php
                 }
+
+                // Render Profile if enabled
+                if ( isset($settings['show_profile']) && $settings['show_profile'] === 'yes' ) {
+                    $profile_class = 'shuriken-mbm-link shuriken-mbm-trigger-profile ' . esc_attr($icon_pos_class);
+                    $profile_order = isset( $settings['profile_order'] ) ? $settings['profile_order'] : 75;
+                    ?>
+                    <li class="shuriken-mbm-item shuriken-mbm-item-profile" style="order: <?php echo esc_attr( $profile_order ); ?>;">
+						<a href="javascript:void(0);" class="<?php echo esc_attr($profile_class); ?>">
+                            <div class="shuriken-mbm-icon">
+                                <?php Icons_Manager::render_icon( $settings['profile_item_icon'], [ 'aria-hidden' => 'true' ] ); ?>
+                            </div>
+							<span class="shuriken-mbm-label"><?php echo esc_html($settings['profile_label']); ?></span>
+						</a>
+					</li>
+                    <?php
+                }
 				?>
 			</ul>
 		</div>
@@ -1346,6 +1427,27 @@ class Mobile_Bottom_Menu extends Widget_Base {
                         <?php endif; ?>
                     </form>
                     <div class="shuriken-mbm-search-results"></div>
+                </div>
+            </div>
+            <?php
+        }
+
+        // Render Profile Drawer if enabled
+        if ( isset($settings['show_profile']) && $settings['show_profile'] === 'yes' ) {
+            ?>
+            <div class="shuriken-mbm-overlay shuriken-mbm-profile-overlay"></div>
+            <div class="shuriken-mbm-drawer shuriken-mbm-profile-drawer">
+                <div class="shuriken-mbm-ui-header">
+                    <h3><?php echo esc_html($settings['profile_label']); ?></h3>
+                    <button class="shuriken-mbm-close-ui">&times;</button>
+                </div>
+                <div class="shuriken-mbm-ui-body">
+                    <div class="shuriken-mbm-profile-content">
+                        <!-- AJAX content will be loaded here -->
+                        <div class="shuriken-mbm-loading">
+                            <div class="shuriken-mbm-loader"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <?php

@@ -176,6 +176,10 @@ final class Shuriken_Elements_Plugin {
         \ShurikenElements\Class_Shuriken_Redirect_CPT::instance();
         \ShurikenElements\Class_Shuriken_Redirect_Engine::instance();
         \ShurikenElements\Admin\Class_Redirect_Management_Ajax::instance();
+
+        // Initialize Account Handler
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-account-handler.php';
+        \ShurikenElements\Class_Shuriken_Account_Handler::instance();
 	}
 
 	/**

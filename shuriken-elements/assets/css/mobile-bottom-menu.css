@@ -579,3 +579,207 @@
 @media (max-width: 767px) {
     .shuriken-mbm-hide-mobile { display: none !important; }
 }
+
+/* -------------------------------------------------------------
+ * Profile Drawer & Forms
+ * ------------------------------------------------------------- */
+.shuriken-mbm-profile-drawer {
+    background: #fdfdfd;
+}
+
+.shuriken-mbm-profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Forms Styling */
+.shuriken-form-tabs {
+    display: flex;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 20px;
+}
+
+.shuriken-form-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.shuriken-form-tab.active {
+    color: #0073aa;
+    border-bottom-color: #0073aa;
+}
+
+.shuriken-form-row {
+    margin-bottom: 15px;
+}
+
+.shuriken-form-row label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #444;
+}
+
+.shuriken-form-row input[type="text"],
+.shuriken-form-row input[type="password"],
+.shuriken-form-row input[type="email"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.shuriken-form-row input:focus {
+    border-color: #0073aa;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,115,170,0.1);
+}
+
+.shuriken-form-row-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.shuriken-button {
+    width: 100%;
+    padding: 14px;
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.shuriken-button:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+}
+
+.shuriken-button.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.shuriken-form-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    display: none;
+}
+
+.shuriken-form-message.error {
+    display: block;
+    background: #fff1f0;
+    color: #cf1322;
+    border: 1px solid #ffa39e;
+}
+
+.shuriken-form-message.success {
+    display: block;
+    background: #f6ffed;
+    color: #389e0d;
+    border: 1px solid #b7eb8f;
+}
+
+/* Dashboard Styling */
+.shuriken-account-welcome {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 20px;
+}
+
+.shuriken-account-avatar img {
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.shuriken-account-info h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #222;
+}
+
+.shuriken-account-info p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #777;
+}
+
+.shuriken-account-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.shuriken-account-nav li {
+    margin-bottom: 8px;
+}
+
+.shuriken-account-nav a {
+    display: block;
+    padding: 12px 15px;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    color: #444;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.shuriken-account-nav a:hover {
+    background: #f9f9f9;
+    border-color: #ddd;
+    color: #0073aa;
+    padding-left: 20px;
+}
+
+.shuriken-account-nav .is-active a {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+}
+
+/* Loading Spinner */
+.shuriken-mbm-loading {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.shuriken-mbm-loader {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #0073aa;
+    border-radius: 50%;
+    animation: shuriken-spin 1s linear infinite;
+}
+
+@keyframes shuriken-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

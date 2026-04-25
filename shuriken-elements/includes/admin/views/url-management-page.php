@@ -20,7 +20,7 @@ $posts = get_posts(['numberposts' => -1]); // Fetch all posts
         <h1><?php esc_html_e('URL Management', 'shuriken-elements'); ?></h1>
         <div>
             <!-- We will trigger the form submit when this button is clicked -->
-            <button type="button" id="shuriken-save-url-settings" class="button button-primary">
+            <button type="button" id="shuriken-save-url-settings-top" class="button button-primary shuriken-save-btn">
                 <?php esc_html_e('Save Changes', 'shuriken-elements'); ?>
             </button>
         </div>
@@ -78,7 +78,7 @@ $posts = get_posts(['numberposts' => -1]); // Fetch all posts
                                     <option value="404"><?php esc_html_e('Display 404 Error', 'shuriken-elements'); ?></option>
                                     <option value="custom"><?php esc_html_e('Redirect to Custom URL', 'shuriken-elements'); ?></option>
                                 </select>
-                                <button type="button" id="shuriken-apply-bulk" class="button"><?php esc_html_e('Apply', 'shuriken-elements'); ?></button>
+                                <button type="button" id="shuriken-apply-bulk" class="button"><?php esc_html_e('Apply Bulk Action', 'shuriken-elements'); ?></button>
                             </div>
                         </div>
 
@@ -220,12 +220,66 @@ $posts = get_posts(['numberposts' => -1]); // Fetch all posts
         </div>
     </form>
 
+    <!-- Sticky Save Bar -->
+    <div id="shuriken-sticky-save-bar" style="display: none; position: fixed; bottom: 0; left: <?php echo is_rtl() ? '0' : '160px'; ?>; right: <?php echo is_rtl() ? '160px' : '0'; ?>; background: #fff; border-top: 1px solid #e5e7eb; padding: 15px 24px; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05); z-index: 999; justify-content: space-between; align-items: center; transition: all 0.3s ease;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="dashicons dashicons-warning" style="color: #f59e0b;"></span>
+            <span style="font-weight: 500; color: #374151; font-size: 14px;"><?php esc_html_e('You have unsaved changes.', 'shuriken-elements'); ?></span>
+        </div>
+        <div>
+            <button type="button" class="button shuriken-save-btn button-primary" style="padding: 0 24px; height: 36px; font-size: 14px; font-weight: 500; border-radius: 6px;">
+                <?php esc_html_e('Save All Changes', 'shuriken-elements'); ?>
+            </button>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            let formChanged = false;
+            const stickyBar = document.getElementById('shuriken-sticky-save-bar');
+            
+            // Adjust left position based on WP admin menu state
+            function updateStickyBarPosition() {
+                const adminMenu = document.getElementById('adminmenuwrap');
+                if (adminMenu) {
+                    const menuWidth = adminMenu.offsetWidth;
+                    if (document.body.classList.contains('rtl')) {
+                        stickyBar.style.right = menuWidth + 'px';
+                    } else {
+                        stickyBar.style.left = menuWidth + 'px';
+                    }
+                }
+            }
+            
+            window.addEventListener('resize', updateStickyBarPosition);
+            updateStickyBarPosition();
+
+            function markAsChanged() {
+                formChanged = true;
+                stickyBar.style.display = 'flex';
+            }
+
+            // Detect any changes in the form
+            const formInputs = document.querySelectorAll('#shuriken-url-management-form input, #shuriken-url-management-form select');
+            formInputs.forEach(input => {
+                input.addEventListener('change', markAsChanged);
+                input.addEventListener('input', markAsChanged);
+            });
+
             // Main Form Submission
-            document.getElementById('shuriken-save-url-settings').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('shuriken-url-management-form').submit();
+            document.querySelectorAll('.shuriken-save-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = document.getElementById('shuriken-url-management-form');
+                    
+                    document.querySelectorAll('.shuriken-save-btn').forEach(b => {
+                        b.innerText = '<?php esc_attr_e("Saving...", "shuriken-elements"); ?>';
+                        b.disabled = true;
+                    });
+
+                    // Submit normally to options.php instead of using fetch to avoid 302 redirect issues or security plugin blocks
+                    form.submit();
+                });
             });
 
             // 404 Custom URL field visibility toggle
@@ -305,11 +359,22 @@ $posts = get_posts(['numberposts' => -1]); // Fetch all posts
                     
                     if (select) {
                         select.value = bulkAction;
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                        
                         if (urlInput) {
                             urlInput.style.display = (bulkAction === 'custom') ? 'block' : 'none';
                         }
+                        
+                        // Highlight row to show it was changed
+                        row.style.transition = 'background-color 0.3s ease';
+                        row.style.backgroundColor = '#e0f2fe'; // light blue
+                        setTimeout(() => {
+                            row.style.backgroundColor = '';
+                        }, 1500);
                     }
                 });
+
+                markAsChanged();
 
                 // Uncheck bulk master box
                 const selectAll = activeTab.querySelector('th input[type="checkbox"]');

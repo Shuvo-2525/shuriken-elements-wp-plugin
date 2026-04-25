@@ -292,6 +292,7 @@
     // Make sure you run this code under Elementor.
     $(window).on('elementor/frontend/init', function() {
         elementorFrontend.hooks.addAction('frontend/element_ready/shuriken-mobile-bottom-menu.default', WidgetMobileBottomMenuHandler);
+        elementorFrontend.hooks.addAction('frontend/element_ready/shuriken-floating-cart.default', WidgetMobileBottomMenuHandler);
     });
 
 })(jQuery);

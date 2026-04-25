@@ -138,6 +138,7 @@ class Class_Shuriken_Elements {
 	public function widget_styles() {
 		wp_register_style( 'shuriken-mobile-bottom-menu', SHURIKEN_ELEMENTS_URL . 'assets/css/mobile-bottom-menu.css', [], '1.0.0' );
 		wp_register_style( 'shuriken-popup-checkout', SHURIKEN_ELEMENTS_URL . 'assets/css/popup-checkout.css', [], '1.0.0' );
+        wp_register_style( 'shuriken-floating-cart', SHURIKEN_ELEMENTS_URL . 'assets/css/floating-cart.css', ['shuriken-mobile-bottom-menu'], '1.0.0' );
 	}
 
 	/**
@@ -199,6 +200,10 @@ class Class_Shuriken_Elements {
 		// Popup Checkout
 		require_once( $widgets_path . 'class-popup-checkout.php' );
 		$widgets_manager->register( new \ShurikenElements\Widgets\Popup_Checkout() );
+
+        // Floating Cart
+		require_once( $widgets_path . 'class-floating-cart.php' );
+		$widgets_manager->register( new \ShurikenElements\Widgets\Floating_Cart() );
 
 	}
 

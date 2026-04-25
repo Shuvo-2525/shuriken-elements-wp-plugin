@@ -110,7 +110,10 @@ class Popup_Checkout extends Widget_Base {
 			'info_notice',
 			[
 				'type' => Controls_Manager::RAW_HTML,
-				'raw' => esc_html__( 'This widget outputs a hidden Popup Checkout form on this page. When a user clicks the Checkout button from the Shuriken Mobile Bottom Menu, this popup will appear instead of redirecting them.', 'shuriken-elements' ),
+				'raw' => sprintf(
+					__( 'This widget outputs a hidden Popup Checkout form on this page. When a user clicks the Checkout button from the Shuriken Mobile Bottom Menu, this popup will appear instead of redirecting them. If you want to edit the checkout fields, please go to the <a href="%s" target="_blank" style="color: inherit; text-decoration: underline; font-weight: bold;">Checkout Editor</a>.', 'shuriken-elements' ),
+					admin_url( 'admin.php?page=shuriken-checkout-editor' )
+				),
 				'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
 			]
 		);

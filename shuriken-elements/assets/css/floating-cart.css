@@ -1,0 +1,83 @@
+/* Floating Cart Container */
+.shuriken-floating-cart-wrapper {
+    position: fixed;
+    z-index: 9998; /* just below sidebar overlay which is 10000 */
+}
+
+/* Positions */
+.shuriken-floating-cart-wrapper.shuriken-fc-pos-bottom-right {
+    bottom: 30px;
+    right: 30px;
+}
+
+.shuriken-floating-cart-wrapper.shuriken-fc-pos-bottom-left {
+    bottom: 30px;
+    left: 30px;
+}
+
+/* Floating Button */
+.shuriken-fc-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: var(--shuriken-fc-bg, #0073aa);
+    color: var(--shuriken-fc-color, #ffffff);
+    border-radius: 50%;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0;
+}
+
+.shuriken-fc-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    color: var(--shuriken-fc-color, #ffffff);
+}
+
+.shuriken-fc-btn:active {
+    transform: translateY(0);
+}
+
+.shuriken-fc-btn svg {
+    width: var(--shuriken-fc-icon-size, 24px);
+    height: var(--shuriken-fc-icon-size, 24px);
+    fill: currentColor;
+}
+
+.shuriken-fc-btn i {
+    font-size: var(--shuriken-fc-icon-size, 24px);
+}
+
+/* Cart Badge */
+.shuriken-fc-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #ff0000;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 50%;
+    padding: 3px 6px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1;
+    transform: translate(25%, -25%);
+}
+
+/* -------------------------------------------------------------
+ * Responsive Visibility
+ * ------------------------------------------------------------- */
+@media (min-width: 1025px) {
+    .shuriken-fc-hide-desktop { display: none !important; }
+}
+@media (min-width: 768px) and (max-width: 1024px) {
+    .shuriken-fc-hide-tablet { display: none !important; }
+}
+@media (max-width: 767px) {
+    .shuriken-fc-hide-mobile { display: none !important; }
+}

@@ -1,6 +1,6 @@
 # Shuriken Elements
 
-**Version:** 1.1.0
+**Version:** 1.3.0
 **Author:** Mohammad Rafiq Shuvo
 **Tested up to Elementor:** 3.20.0
 **Requires PHP:** 7.4+
@@ -67,6 +67,13 @@ A professional-grade checkout field manager built directly into your WordPress a
 ---
 
 ## 📋 Changelog
+
+### Version 1.3.0
+*   **New Feature:** Implemented **Dynamic Mobile Account Handler** with AJAX-powered navigation for all WooCommerce endpoints (Orders, Addresses, Account Details).
+*   **New Feature:** Integrated **User Profile Branding** within the mobile account popup, displaying avatars and display names for logged-in users.
+*   **Improvement:** Added **AJAX Order Confirmation** to the Popup Checkout, allowing the "Thank You" page to load within the modal without a full page refresh.
+*   **Improvement:** Enhanced popup UI with **Scrollable Containers** to handle long content gracefully on mobile devices.
+*   **Improvement:** Refined modal z-index and layout handling for better theme compatibility.
 
 ### Version 1.2.0
 *   **New Feature:** Added **Special Redirects Interface** with a modern UI for configuring and managing advanced redirect rules.

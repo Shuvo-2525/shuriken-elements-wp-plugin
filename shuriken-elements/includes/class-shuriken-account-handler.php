@@ -43,14 +43,17 @@ class Class_Shuriken_Account_Handler {
 		
 		add_action( 'wp_ajax_shuriken_ajax_register', [ $this, 'ajax_register' ] );
 		add_action( 'wp_ajax_nopriv_shuriken_ajax_register', [ $this, 'ajax_register' ] );
+
+		add_action( 'wp_ajax_shuriken_ajax_logout', [ $this, 'ajax_logout' ] );
+
+		// AJAX handler for WC endpoints
+		add_action( 'wp_ajax_shuriken_get_wc_endpoint', [ $this, 'ajax_get_wc_endpoint_content' ] );
 	}
 
 	/**
 	 * AJAX: Get account content (Dashboard or Login/Register forms)
 	 */
 	public function ajax_get_account_content() {
-		check_ajax_referer( 'shuriken_mbm_nonce', 'security' );
-
 		ob_start();
 		
 		if ( is_user_logged_in() ) {
@@ -93,9 +96,6 @@ class Class_Shuriken_Account_Handler {
 						<a href="<?php echo esc_url( wc_get_account_endpoint_url( $endpoint ) ); ?>"><?php echo esc_html( $label ); ?></a>
 					</li>
 				<?php endforeach; ?>
-                <li class="woocommerce-MyAccount-navigation-link woocommerce-MyAccount-navigation-link--customer-logout">
-                    <a href="<?php echo esc_url( wp_logout_url( get_permalink() ) ); ?>"><?php echo esc_html__( 'Logout', 'shuriken-elements' ); ?></a>
-                </li>
 			</ul>
 		</div>
 		<?php
@@ -107,13 +107,6 @@ class Class_Shuriken_Account_Handler {
 	private function render_login_registration_forms() {
 		?>
 		<div class="shuriken-account-forms">
-			<div class="shuriken-form-tabs">
-				<button class="shuriken-form-tab active" data-target="shuriken-login-form"><?php esc_html_e( 'Login', 'shuriken-elements' ); ?></button>
-				<?php if ( get_option( 'users_can_register' ) || ( class_exists( 'WooCommerce' ) && 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) ) : ?>
-					<button class="shuriken-form-tab" data-target="shuriken-register-form"><?php esc_html_e( 'Register', 'shuriken-elements' ); ?></button>
-				<?php endif; ?>
-			</div>
-
 			<div class="shuriken-form-container">
 				<!-- Login Form -->
 				<form id="shuriken-login-form" class="shuriken-ajax-form active" method="post">
@@ -136,10 +129,12 @@ class Class_Shuriken_Account_Handler {
 						<button type="submit" class="shuriken-button"><?php esc_html_e( 'Log in', 'shuriken-elements' ); ?></button>
 					</div>
 					<div class="shuriken-form-message"></div>
+						<div class="shuriken-form-toggle" style="margin-top: 15px; text-align: center; font-size: 14px;">
+							<?php esc_html_e( 'New user?', 'shuriken-elements' ); ?> <a href="#" class="shuriken-toggle-register" style="font-weight: 600; color: #0073aa; text-decoration: none;"><?php esc_html_e( 'Click here to sign up', 'shuriken-elements' ); ?></a>
+						</div>
 				</form>
 
 				<!-- Register Form -->
-				<?php if ( get_option( 'users_can_register' ) || ( class_exists( 'WooCommerce' ) && 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) ) : ?>
 					<form id="shuriken-register-form" class="shuriken-ajax-form" method="post" style="display: none;">
 						<div class="shuriken-form-row">
 							<label for="shuriken_reg_email"><?php esc_html_e( 'Email address', 'shuriken-elements' ); ?> <span class="required">*</span></label>
@@ -151,19 +146,23 @@ class Class_Shuriken_Account_Handler {
 								<input type="text" name="username" id="shuriken_reg_username" required />
 							</div>
 						<?php endif; ?>
-						<?php if ( 'no' === get_option( 'woocommerce_registration_generate_password' ) ) : ?>
-							<div class="shuriken-form-row">
-								<label for="shuriken_reg_password"><?php esc_html_e( 'Password', 'shuriken-elements' ); ?> <span class="required">*</span></label>
-								<input type="password" name="password" id="shuriken_reg_password" required />
-							</div>
-						<?php endif; ?>
+						<div class="shuriken-form-row">
+							<label for="shuriken_reg_password"><?php esc_html_e( 'Password', 'shuriken-elements' ); ?> <span class="required">*</span></label>
+							<input type="password" name="password" id="shuriken_reg_password" required />
+						</div>
+						<div class="shuriken-form-row">
+							<label for="shuriken_reg_password_confirm"><?php esc_html_e( 'Confirm Password', 'shuriken-elements' ); ?> <span class="required">*</span></label>
+							<input type="password" name="password_confirm" id="shuriken_reg_password_confirm" required />
+						</div>
 						<div class="shuriken-form-row">
 							<?php wp_nonce_field( 'shuriken-register', 'shuriken-register-nonce' ); ?>
 							<button type="submit" class="shuriken-button"><?php esc_html_e( 'Register', 'shuriken-elements' ); ?></button>
 						</div>
 						<div class="shuriken-form-message"></div>
+						<div class="shuriken-form-toggle" style="margin-top: 15px; text-align: center; font-size: 14px;">
+							<?php esc_html_e( 'Already have an account?', 'shuriken-elements' ); ?> <a href="#" class="shuriken-toggle-login" style="font-weight: 600; color: #0073aa; text-decoration: none;"><?php esc_html_e( 'Log in', 'shuriken-elements' ); ?></a>
+						</div>
 					</form>
-				<?php endif; ?>
 			</div>
 		</div>
 		<?php
@@ -185,8 +184,22 @@ class Class_Shuriken_Account_Handler {
 		if ( is_wp_error( $user_signon ) ) {
 			wp_send_json_error( $user_signon->get_error_message() );
 		} else {
-			wp_send_json_success( esc_html__( 'Login successful! Redirecting...', 'shuriken-elements' ) );
+			wp_set_current_user( $user_signon->ID );
+			$new_nonce = wp_create_nonce( 'shuriken_mbm_nonce' );
+			wp_send_json_success( [
+				'message'   => esc_html__( 'Login successful! Loading...', 'shuriken-elements' ),
+				'new_nonce' => $new_nonce
+			] );
 		}
+	}
+
+
+	/**
+	 * AJAX: Logout handler
+	 */
+	public function ajax_logout() {
+		wp_logout();
+		wp_send_json_success( esc_html__( 'Logged out successfully.', 'shuriken-elements' ) );
 	}
 
 	/**
@@ -212,10 +225,45 @@ class Class_Shuriken_Account_Handler {
 
 			// Automatically log in the new user
 			wp_set_auth_cookie( $customer_id, true );
+			wp_set_current_user( $customer_id );
+			$new_nonce = wp_create_nonce( 'shuriken_mbm_nonce' );
 			
-			wp_send_json_success( esc_html__( 'Registration successful! Redirecting...', 'shuriken-elements' ) );
+			wp_send_json_success( [
+				'message'   => esc_html__( 'Registration successful! Loading...', 'shuriken-elements' ),
+				'new_nonce' => $new_nonce
+			] );
 		} catch ( \Exception $e ) {
 			wp_send_json_error( $e->getMessage() );
 		}
+	}
+
+	/**
+	 * AJAX: Get WooCommerce Endpoint Content
+	 */
+	public function ajax_get_wc_endpoint_content() {
+		if ( ! is_user_logged_in() || ! class_exists( 'WooCommerce' ) ) {
+			wp_send_json_error( esc_html__( 'Unauthorized or WooCommerce missing.', 'shuriken-elements' ) );
+		}
+
+		$endpoint = isset( $_POST['endpoint'] ) ? sanitize_text_field( $_POST['endpoint'] ) : '';
+		$value    = isset( $_POST['value'] ) ? sanitize_text_field( $_POST['value'] ) : '';
+
+		if ( empty( $endpoint ) ) {
+			wp_send_json_error( esc_html__( 'Invalid endpoint.', 'shuriken-elements' ) );
+		}
+
+		ob_start();
+		
+		// Wrap in standard WC My Account container so scripts work if needed
+		echo '<div class="woocommerce"><div class="woocommerce-MyAccount-content">';
+		if ( ! empty( $value ) ) {
+			do_action( 'woocommerce_account_' . $endpoint . '_endpoint', $value );
+		} else {
+			do_action( 'woocommerce_account_' . $endpoint . '_endpoint' );
+		}
+		echo '</div></div>';
+
+		$html = ob_get_clean();
+		wp_send_json_success( $html );
 	}
 }

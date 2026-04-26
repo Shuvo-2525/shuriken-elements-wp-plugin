@@ -497,6 +497,22 @@ class Mobile_Bottom_Menu extends Widget_Base {
 			]
 		);
 
+        $this->add_control(
+			'profile_action',
+			[
+				'label' => esc_html__( 'Profile Click Action', 'shuriken-elements' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'drawer',
+				'options' => [
+					'drawer' => esc_html__( 'Open Bottom Drawer', 'shuriken-elements' ),
+					'popup'  => esc_html__( 'Open Centered Popup', 'shuriken-elements' ),
+				],
+                'condition' => [
+                    'show_profile' => 'yes'
+                ]
+			]
+		);
+
 		$this->end_controls_section();
 
         /* ----------------------------------------------------------------------
@@ -1357,15 +1373,32 @@ class Mobile_Bottom_Menu extends Widget_Base {
 
                 // Render Profile if enabled
                 if ( isset($settings['show_profile']) && $settings['show_profile'] === 'yes' ) {
+                    $profile_action = isset($settings['profile_action']) ? $settings['profile_action'] : 'drawer';
                     $profile_class = 'shuriken-mbm-link shuriken-mbm-trigger-profile ' . esc_attr($icon_pos_class);
                     $profile_order = isset( $settings['profile_order'] ) ? $settings['profile_order'] : 75;
                     ?>
                     <li class="shuriken-mbm-item shuriken-mbm-item-profile" style="order: <?php echo esc_attr( $profile_order ); ?>;">
-						<a href="javascript:void(0);" class="<?php echo esc_attr($profile_class); ?>">
+						<a href="javascript:void(0);" class="<?php echo esc_attr($profile_class); ?>" data-profile-action="<?php echo esc_attr($profile_action); ?>">
                             <div class="shuriken-mbm-icon">
-                                <?php Icons_Manager::render_icon( $settings['profile_item_icon'], [ 'aria-hidden' => 'true' ] ); ?>
+                                <?php 
+                                if ( is_user_logged_in() ) {
+                                    $current_user = wp_get_current_user();
+                                    echo get_avatar( $current_user->ID, 24, '', '', array( 'class' => 'shuriken-mbm-avatar', 'style' => 'border-radius: 50%; object-fit: cover;' ) );
+                                } else {
+                                    Icons_Manager::render_icon( $settings['profile_item_icon'], [ 'aria-hidden' => 'true' ] ); 
+                                }
+                                ?>
                             </div>
-							<span class="shuriken-mbm-label"><?php echo esc_html($settings['profile_label']); ?></span>
+							<span class="shuriken-mbm-label">
+                                <?php 
+                                if ( is_user_logged_in() ) {
+                                    $current_user = wp_get_current_user();
+                                    echo esc_html( $current_user->display_name );
+                                } else {
+                                    echo esc_html($settings['profile_label']); 
+                                }
+                                ?>
+                            </span>
 						</a>
 					</li>
                     <?php
@@ -1432,11 +1465,13 @@ class Mobile_Bottom_Menu extends Widget_Base {
             <?php
         }
 
-        // Render Profile Drawer if enabled
+        // Render Profile Drawer/Popup if enabled
         if ( isset($settings['show_profile']) && $settings['show_profile'] === 'yes' ) {
+            $profile_action = isset($settings['profile_action']) ? $settings['profile_action'] : 'drawer';
+            $ui_class = $profile_action === 'popup' ? 'shuriken-mbm-profile-popup-container' : 'shuriken-mbm-drawer shuriken-mbm-profile-drawer';
             ?>
             <div class="shuriken-mbm-overlay shuriken-mbm-profile-overlay"></div>
-            <div class="shuriken-mbm-drawer shuriken-mbm-profile-drawer">
+            <div class="<?php echo esc_attr($ui_class); ?>">
                 <div class="shuriken-mbm-ui-header">
                     <h3><?php echo esc_html($settings['profile_label']); ?></h3>
                     <button class="shuriken-mbm-close-ui">&times;</button>

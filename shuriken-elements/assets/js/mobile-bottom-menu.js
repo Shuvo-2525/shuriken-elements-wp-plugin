@@ -19,6 +19,12 @@
             $overlay.removeClass('is-active');
             if ($sidebar.length) $sidebar.removeClass('is-active');
             if ($drawer.length) $drawer.removeClass('is-active');
+            
+            var $profileContainer = $scope.find('.shuriken-mbm-profile-drawer, .shuriken-mbm-profile-popup-container');
+            if ($profileContainer.length) $profileContainer.removeClass('is-active');
+            var $profileOverlay = $scope.find('.shuriken-mbm-profile-overlay');
+            if ($profileOverlay.length) $profileOverlay.removeClass('is-active');
+
             $('body').css('overflow', '');
             
             // Re-bind fragments refresh to update if cart changed aggressively while open
@@ -283,14 +289,14 @@
 
         // Profile Implementation
         var $profileTrigger = $scope.find('.shuriken-mbm-trigger-profile');
-        var $profileDrawer  = $scope.find('.shuriken-mbm-profile-drawer');
+        var $profileContainer = $scope.find('.shuriken-mbm-profile-drawer, .shuriken-mbm-profile-popup-container');
         var $profileOverlay = $scope.find('.shuriken-mbm-profile-overlay');
         var $profileContent = $scope.find('.shuriken-mbm-profile-content');
 
-        if ( $profileTrigger.length && $profileDrawer.length ) {
+        if ( $profileTrigger.length && $profileContainer.length ) {
             $profileTrigger.on('click', function(e) {
                 e.preventDefault();
-                openUI($profileDrawer);
+                openUI($profileContainer);
                 $profileOverlay.addClass('is-active');
                 
                 // Load content if not already loaded or if we want to refresh
@@ -300,15 +306,13 @@
 
         $profileOverlay.on('click', function() {
             closeUI();
-            $profileOverlay.removeClass('is-active');
         });
 
         function loadProfileContent() {
             $profileContent.html('<div class="shuriken-mbm-loading"><div class="shuriken-mbm-loader"></div></div>');
 
             $.post(ajaxUrl, {
-                action: 'shuriken_get_account_content',
-                security: nonce
+                action: 'shuriken_get_account_content'
             }, function(response) {
                 if ( response.success ) {
                     $profileContent.html(response.data);
@@ -320,13 +324,96 @@
         }
 
         function initProfileForms() {
-            // Tab switching
-            $profileContent.find('.shuriken-form-tab').on('click', function() {
-                var target = $(this).data('target');
-                $profileContent.find('.shuriken-form-tab').removeClass('active');
-                $(this).addClass('active');
-                $profileContent.find('.shuriken-ajax-form').hide().removeClass('active');
-                $profileContent.find('#' + target).fadeIn(300).addClass('active');
+            // Toggle to Register
+            $profileContent.find('.shuriken-toggle-register').on('click', function(e) {
+                e.preventDefault();
+                $profileContent.find('#shuriken-login-form').hide().removeClass('active');
+                $profileContent.find('#shuriken-register-form').fadeIn(300).addClass('active');
+            });
+
+            // Toggle to Login
+            $profileContent.find('.shuriken-toggle-login').on('click', function(e) {
+                e.preventDefault();
+                $profileContent.find('#shuriken-register-form').hide().removeClass('active');
+                $profileContent.find('#shuriken-login-form').fadeIn(300).addClass('active');
+            });
+
+            // WooCommerce Endpoint AJAX
+            $profileContent.on('click', 'a', function(e) {
+                var url = $(this).attr('href');
+                if (!url || url === '#' || url.indexOf('javascript:') === 0) return;
+
+                var urlObj;
+                try {
+                    urlObj = new URL(url, window.location.origin);
+                } catch(err) { return; }
+                
+                if (urlObj.hostname !== window.location.hostname) return;
+
+                var $li = $(this).closest('li');
+                if ($li.hasClass('woocommerce-MyAccount-navigation-link--dashboard')) {
+                    return; 
+                }
+
+                // Handle Logout
+                if ($li.hasClass('woocommerce-MyAccount-navigation-link--customer-logout') || urlObj.pathname.indexOf('customer-logout') !== -1) {
+                    e.preventDefault();
+                    $profileContent.html('<div class="shuriken-mbm-loading"><div class="shuriken-mbm-loader"></div></div>');
+                    $.post(ajaxUrl, {
+                        action: 'shuriken_ajax_logout'
+                    }, function() {
+                        closeUI(); // Close the popup without reloading the page
+                        loadProfileContent(); // reload content silently in the background
+                    }).fail(function() {
+                        window.location.href = url; // Fallback
+                    });
+                    return;
+                }
+
+                var pathSegments = urlObj.pathname.replace(/^\/|\/$/g, '').split('/');
+                var knownEndpoints = ['orders', 'downloads', 'edit-address', 'payment-methods', 'edit-account', 'view-order'];
+                var endpoint = '';
+                var value = '';
+
+                for (var i = 0; i < pathSegments.length; i++) {
+                    if (knownEndpoints.indexOf(pathSegments[i]) !== -1) {
+                        endpoint = pathSegments[i];
+                        if (i + 1 < pathSegments.length) {
+                            value = pathSegments[i+1];
+                        }
+                        break;
+                    }
+                }
+
+                if (!endpoint) {
+                    return; // Let standard links behave normally
+                }
+
+                e.preventDefault();
+
+                $profileContent.html('<div class="shuriken-mbm-loading"><div class="shuriken-mbm-loader"></div></div>');
+
+                $.post(ajaxUrl, {
+                    action: 'shuriken_get_wc_endpoint',
+                    endpoint: endpoint,
+                    value: value
+                }, function(response) {
+                    if ( response.success ) {
+                        var backBtn = '<button class="shuriken-mbm-back-btn" style="background: none; border: none; color: var(--shuriken-mbm-item-active-color, #0073aa); font-weight: 600; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 15px;"><i class="fas fa-arrow-left"></i> Back to Menu</button>';
+                        $profileContent.html(backBtn + response.data);
+                        
+                        $profileContent.find('.shuriken-mbm-back-btn').on('click', function() {
+                            loadProfileContent();
+                        });
+                        
+                        // Re-initialize forms if there are nested links
+                        initProfileForms();
+                    } else {
+                        window.location.href = url;
+                    }
+                }).fail(function() {
+                    window.location.href = url;
+                });
             });
 
             // Login AJAX
@@ -347,7 +434,11 @@
                     security: $form.find('#shuriken-login-nonce').val()
                 }, function(response) {
                     if ( response.success ) {
-                        $msg.addClass('success').html(response.data);
+                        var msgText = response.data.message ? response.data.message : response.data;
+                        if (response.data.new_nonce) {
+                            nonce = response.data.new_nonce;
+                        }
+                        $msg.addClass('success').html(msgText);
                         // Reload content to show dashboard
                         setTimeout(loadProfileContent, 1000);
                     } else {
@@ -363,19 +454,32 @@
                 var $form = $(this);
                 var $msg = $form.find('.shuriken-form-message');
                 var $btn = $form.find('button[type="submit"]');
+                
+                var password = $form.find('input[name="password"]').val();
+                var confirmPassword = $form.find('input[name="password_confirm"]').val();
 
                 $msg.html('').removeClass('error success');
+                
+                if (password !== confirmPassword) {
+                    $msg.addClass('error').html((typeof shuriken_obj !== 'undefined' && shuriken_obj.i18n_password_mismatch) ? shuriken_obj.i18n_password_mismatch : 'Passwords do not match.');
+                    return;
+                }
+
                 $btn.prop('disabled', true).addClass('loading');
 
                 $.post(ajaxUrl, {
                     action: 'shuriken_ajax_register',
                     email: $form.find('input[name="email"]').val(),
                     username: $form.find('input[name="username"]').val(),
-                    password: $form.find('input[name="password"]').val(),
+                    password: password,
                     security: $form.find('#shuriken-register-nonce').val()
                 }, function(response) {
                     if ( response.success ) {
-                        $msg.addClass('success').html(response.data);
+                        var msgText = response.data.message ? response.data.message : response.data;
+                        if (response.data.new_nonce) {
+                            nonce = response.data.new_nonce;
+                        }
+                        $msg.addClass('success').html(msgText);
                         // Reload content to show dashboard
                         setTimeout(loadProfileContent, 1000);
                     } else {
@@ -392,6 +496,55 @@
 
         // Initialize texts on load
         updateCartButtonTexts();
+
+        // Intercept WooCommerce Checkout Redirect for Shuriken Popup
+        $.ajaxSetup({
+            dataFilter: function(data, type) {
+                if (type === 'json' && data) {
+                    try {
+                        var json = JSON.parse(data);
+                        // If it's a success, it's a redirect, and the checkout popup is visible
+                        if (json.result === 'success' && json.redirect && json.redirect.indexOf('order-received') !== -1) {
+                            var $checkoutPopup = $('.shuriken-popup-checkout-container');
+                            if ($checkoutPopup.length && $checkoutPopup.is(':visible')) {
+                                json.redirect = '#shuriken-order-received=' + encodeURIComponent(json.redirect);
+                                return JSON.stringify(json);
+                            }
+                        }
+                    } catch (e) {}
+                }
+                return data;
+            }
+        });
+
+        // Handle the custom hash redirect
+        $(window).on('hashchange', function() {
+            var hash = window.location.hash;
+            if (hash.indexOf('#shuriken-order-received=') === 0) {
+                var realUrl = decodeURIComponent(hash.replace('#shuriken-order-received=', ''));
+                var $checkoutPopup = $('.shuriken-popup-checkout-container');
+                var $checkoutBody = $checkoutPopup.find('.shuriken-popup-checkout-body');
+                
+                if ($checkoutBody.length) {
+                    $checkoutBody.html('<div style="padding: 40px; text-align: center;"><div class="shuriken-mbm-loader" style="margin: 0 auto;"></div><p style="margin-top: 15px;">Processing your order...</p></div>');
+                    // Fetch the order received page and extract the content
+                    $.get(realUrl, function(html) {
+                        var $temp = $('<div>').html(html);
+                        var $content = $temp.find('.woocommerce-order'); // WC's default wrapper for order received
+                        if ($content.length) {
+                            $checkoutBody.html($content);
+                        } else {
+                            $checkoutBody.html(html); // Fallback
+                        }
+                    }).fail(function() {
+                        window.location.href = realUrl;
+                    });
+                } else {
+                    window.location.href = realUrl;
+                }
+            }
+        });
+
     };
 
     // Make sure you run this code under Elementor.

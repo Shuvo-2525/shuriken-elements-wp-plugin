@@ -435,6 +435,87 @@ class Mobile_Bottom_Menu extends Widget_Base {
 		$this->end_controls_section();
 
 		/* ----------------------------------------------------------------------
+		 * Content Tab - Track Order Configuration
+		 * ---------------------------------------------------------------------- */
+		$this->start_controls_section(
+			'section_track_order_config',
+			[
+				'label' => esc_html__( 'Track Order Configuration', 'shuriken-elements' ),
+				'tab' => Controls_Manager::TAB_CONTENT,
+			]
+		);
+
+		$this->add_control(
+			'show_track_order',
+			[
+				'label' => esc_html__( 'Show Track Order Icon', 'shuriken-elements' ),
+				'type' => Controls_Manager::SWITCHER,
+				'label_on' => esc_html__( 'Show', 'shuriken-elements' ),
+				'label_off' => esc_html__( 'Hide', 'shuriken-elements' ),
+				'return_value' => 'yes',
+				'default' => 'no',
+			]
+		);
+
+        $this->add_control(
+			'track_order_order',
+			[
+				'label' => esc_html__( 'Track Order Item Order', 'shuriken-elements' ),
+				'type' => Controls_Manager::NUMBER,
+				'default' => 60,
+				'description' => esc_html__( 'Visual position (Higher number = further right)', 'shuriken-elements' ),
+                'condition' => [
+                    'show_track_order' => 'yes'
+                ]
+			]
+		);
+
+        $this->add_control(
+			'track_order_label',
+			[
+				'label' => esc_html__( 'Track Order Label Title', 'shuriken-elements' ),
+				'type' => Controls_Manager::TEXT,
+				'default' => esc_html__( 'Track Order', 'shuriken-elements' ),
+                'condition' => [
+                    'show_track_order' => 'yes'
+                ]
+			]
+		);
+
+        $this->add_control(
+			'track_order_item_icon',
+			[
+				'label' => esc_html__( 'Track Order Icon', 'shuriken-elements' ),
+				'type' => Controls_Manager::ICONS,
+				'default' => [
+					'value' => 'fas fa-truck',
+					'library' => 'fa-solid',
+				],
+                'condition' => [
+                    'show_track_order' => 'yes'
+                ]
+			]
+		);
+
+        $this->add_control(
+			'track_order_action',
+			[
+				'label' => esc_html__( 'Track Order Action', 'shuriken-elements' ),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'popup',
+				'options' => [
+					'popup'  => esc_html__( 'Open Centered Popup', 'shuriken-elements' ),
+                    'drawer' => esc_html__( 'Open Bottom Drawer', 'shuriken-elements' ),
+				],
+                'condition' => [
+                    'show_track_order' => 'yes'
+                ]
+			]
+		);
+
+		$this->end_controls_section();
+
+		/* ----------------------------------------------------------------------
 		 * Content Tab - Profile Configuration
 		 * ---------------------------------------------------------------------- */
 		$this->start_controls_section(
@@ -1403,6 +1484,23 @@ class Mobile_Bottom_Menu extends Widget_Base {
 					</li>
                     <?php
                 }
+
+                // Render Track Order if enabled
+                if ( isset($settings['show_track_order']) && $settings['show_track_order'] === 'yes' ) {
+                    $track_order_action = isset($settings['track_order_action']) ? $settings['track_order_action'] : 'popup';
+                    $track_order_class = 'shuriken-mbm-link shuriken-mbm-trigger-track-order ' . esc_attr($icon_pos_class);
+                    $track_order_order = isset( $settings['track_order_order'] ) ? $settings['track_order_order'] : 60;
+                    ?>
+                    <li class="shuriken-mbm-item shuriken-mbm-item-track-order" style="order: <?php echo esc_attr( $track_order_order ); ?>;">
+						<a href="javascript:void(0);" class="<?php echo esc_attr($track_order_class); ?>" data-track-action="<?php echo esc_attr($track_order_action); ?>">
+                            <div class="shuriken-mbm-icon">
+                                <?php Icons_Manager::render_icon( $settings['track_order_item_icon'], [ 'aria-hidden' => 'true' ] ); ?>
+                            </div>
+							<span class="shuriken-mbm-label"><?php echo esc_html($settings['track_order_label']); ?></span>
+						</a>
+					</li>
+                    <?php
+                }
 				?>
 			</ul>
 		</div>
@@ -1482,6 +1580,40 @@ class Mobile_Bottom_Menu extends Widget_Base {
                         <div class="shuriken-mbm-loading">
                             <div class="shuriken-mbm-loader"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
+
+        // Render Track Order Drawer/Popup if enabled
+        if ( isset($settings['show_track_order']) && $settings['show_track_order'] === 'yes' ) {
+            $track_order_action = isset($settings['track_order_action']) ? $settings['track_order_action'] : 'popup';
+            $ui_class = $track_order_action === 'popup' ? 'shuriken-mbm-track-order-popup-container' : 'shuriken-mbm-drawer shuriken-mbm-track-order-drawer';
+            ?>
+            <div class="shuriken-mbm-overlay shuriken-mbm-track-order-overlay"></div>
+            <div class="<?php echo esc_attr($ui_class); ?>">
+                <div class="shuriken-mbm-ui-header">
+                    <h3><?php echo esc_html($settings['track_order_label']); ?></h3>
+                    <button class="shuriken-mbm-close-ui">&times;</button>
+                </div>
+                <div class="shuriken-mbm-ui-body">
+                    <div class="shuriken-mbm-track-order-content">
+                        <form id="shuriken-track-order-form" class="shuriken-ajax-form">
+                            <div class="shuriken-form-row">
+                                <label for="shuriken_track_order_id"><?php esc_html_e( 'Order ID', 'shuriken-elements' ); ?> <span class="required">*</span></label>
+                                <input type="text" name="order_id" id="shuriken_track_order_id" placeholder="<?php esc_attr_e( 'Found in your order confirmation email.', 'shuriken-elements' ); ?>" required />
+                            </div>
+                            <div class="shuriken-form-row">
+                                <label for="shuriken_track_order_email"><?php esc_html_e( 'Billing Email', 'shuriken-elements' ); ?> <span class="required">*</span></label>
+                                <input type="email" name="order_email" id="shuriken_track_order_email" placeholder="<?php esc_attr_e( 'Email you used during checkout.', 'shuriken-elements' ); ?>" required />
+                            </div>
+                            <div class="shuriken-form-row">
+                                <button type="submit" class="shuriken-button"><?php esc_html_e( 'Track', 'shuriken-elements' ); ?></button>
+                            </div>
+                            <div class="shuriken-track-order-message" style="margin-top: 15px;"></div>
+                        </form>
+                        <div class="shuriken-track-order-results" style="margin-top: 20px;"></div>
                     </div>
                 </div>
             </div>

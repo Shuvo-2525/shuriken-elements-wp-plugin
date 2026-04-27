@@ -16,8 +16,5 @@ if ( ! defined( 'ABSPATH' ) ) {
             <strong><?php esc_html_e( 'Developed by:', 'shuriken-elements' ); ?></strong> Mohammad Rafiq Shuvo<br>
             <strong><?php esc_html_e( 'Managed by:', 'shuriken-elements' ); ?></strong> <a href="https://shurikenit.com" target="_blank">ShurikenIT</a>
         </p>
-        <p>
-            <?php esc_html_e( 'Active Widgets: 0', 'shuriken-elements' ); ?> <!-- This can be made dynamic later -->
-        </p>
     </div>
 </div>

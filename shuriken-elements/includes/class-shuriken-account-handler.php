@@ -90,10 +90,36 @@ class Class_Shuriken_Account_Handler {
 
 			<ul class="shuriken-account-nav">
 				<?php
-				$items = wc_get_account_menu_items();
-				foreach ( $items as $endpoint => $label ) : ?>
-					<li class="<?php echo wc_get_account_menu_item_classes( $endpoint ); ?>">
-						<a href="<?php echo esc_url( wc_get_account_endpoint_url( $endpoint ) ); ?>"><?php echo esc_html( $label ); ?></a>
+				$saved_endpoints = get_option( 'shuriken_account_management_fields', [] );
+				if ( empty( $saved_endpoints ) ) {
+					// Fallback to default
+					$saved_endpoints = [
+						'dashboard'       => [ 'label' => 'Dashboard', 'enabled' => true, 'icon' => 'dashicons-dashboard' ],
+						'orders'          => [ 'label' => 'Orders', 'enabled' => true, 'icon' => 'dashicons-cart' ],
+						'downloads'       => [ 'label' => 'Downloads', 'enabled' => true, 'icon' => 'dashicons-download' ],
+						'edit-address'    => [ 'label' => 'Addresses', 'enabled' => true, 'icon' => 'dashicons-location-alt' ],
+						'edit-account'    => [ 'label' => 'Account details', 'enabled' => true, 'icon' => 'dashicons-admin-users' ],
+						'customer-logout' => [ 'label' => 'Logout', 'enabled' => true, 'icon' => 'dashicons-migrate' ],
+					];
+				}
+
+				foreach ( $saved_endpoints as $endpoint => $data ) : 
+					if ( ! isset( $data['enabled'] ) || ! $data['enabled'] ) {
+						continue;
+					}
+					$label = isset( $data['label'] ) ? $data['label'] : $endpoint;
+					$icon  = isset( $data['icon'] ) ? $data['icon'] : '';
+					$url   = wc_get_account_endpoint_url( $endpoint );
+					// Logout url needs special handling
+					if ( $endpoint === 'customer-logout' ) {
+						$url = wc_logout_url( wc_get_page_permalink( 'myaccount' ) );
+					}
+					?>
+					<li class="<?php echo wc_get_account_menu_item_classes( $endpoint ); ?>" style="padding: 10px 20px; border-bottom: 1px solid #f0f0f0; display:flex; align-items:center; gap:10px;">
+						<?php if ( $icon ) : ?>
+							<span class="dashicons <?php echo esc_attr( $icon ); ?>" style="color:#888;"></span>
+						<?php endif; ?>
+						<a href="<?php echo esc_url( $url ); ?>" style="font-weight:500; color:#333; text-decoration:none; width:100%;"><?php echo esc_html( $label ); ?></a>
 					</li>
 				<?php endforeach; ?>
 			</ul>
@@ -136,10 +162,35 @@ class Class_Shuriken_Account_Handler {
 
 				<!-- Register Form -->
 					<form id="shuriken-register-form" class="shuriken-ajax-form" method="post" style="display: none;">
+						<?php
+						$signup_fields = get_option( 'shuriken_signup_fields', [] );
+						if ( empty( $signup_fields ) ) {
+							$signup_fields = [
+								'billing_first_name' => ['type' => 'text', 'label' => 'First Name', 'enabled' => true, 'required' => true],
+								'billing_last_name'  => ['type' => 'text', 'label' => 'Last Name', 'enabled' => true, 'required' => true],
+							];
+						}
+
+						// We must have an email field regardless of custom fields, but we'll add it first if it's not in the custom fields list.
+						// Actually, WooCommerce always requires email.
+						?>
 						<div class="shuriken-form-row">
 							<label for="shuriken_reg_email"><?php esc_html_e( 'Email address', 'shuriken-elements' ); ?> <span class="required">*</span></label>
 							<input type="email" name="email" id="shuriken_reg_email" required />
 						</div>
+
+						<?php foreach ( $signup_fields as $key => $field ) : 
+							if ( ! isset( $field['enabled'] ) || ! $field['enabled'] ) continue;
+							$type = isset( $field['type'] ) ? $field['type'] : 'text';
+							$label = isset( $field['label'] ) ? $field['label'] : $key;
+							$placeholder = isset( $field['placeholder'] ) ? $field['placeholder'] : '';
+							$required = isset( $field['required'] ) && $field['required'] ? true : false;
+						?>
+						<div class="shuriken-form-row">
+							<label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?> <?php if ( $required ) echo '<span class="required">*</span>'; ?></label>
+							<input type="<?php echo esc_attr( $type ); ?>" name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>" placeholder="<?php echo esc_attr( $placeholder ); ?>" <?php echo $required ? 'required' : ''; ?> />
+						</div>
+						<?php endforeach; ?>
 						<?php if ( 'no' === get_option( 'woocommerce_registration_generate_username' ) ) : ?>
 							<div class="shuriken-form-row">
 								<label for="shuriken_reg_username"><?php esc_html_e( 'Username', 'shuriken-elements' ); ?> <span class="required">*</span></label>
@@ -221,6 +272,31 @@ class Class_Shuriken_Account_Handler {
 
 			if ( is_wp_error( $customer_id ) ) {
 				throw new \Exception( $customer_id->get_error_message() );
+			}
+
+			// Ensure billing_email is set to mirror the account email
+			update_user_meta( $customer_id, 'billing_email', $email );
+
+			// Save custom signup fields
+			$signup_fields = get_option( 'shuriken_signup_fields', [] );
+			foreach ( $signup_fields as $key => $field ) {
+				if ( isset( $field['enabled'] ) && $field['enabled'] && isset( $_POST[ $key ] ) ) {
+					$value = sanitize_text_field( $_POST[ $key ] );
+					update_user_meta( $customer_id, $key, $value );
+
+					// Mirror names and phone to WooCommerce fields
+					if ( in_array( $key, ['billing_first_name', 'first_name'], true ) ) {
+						update_user_meta( $customer_id, 'first_name', $value );
+						update_user_meta( $customer_id, 'billing_first_name', $value );
+						update_user_meta( $customer_id, 'shipping_first_name', $value );
+					} elseif ( in_array( $key, ['billing_last_name', 'last_name'], true ) ) {
+						update_user_meta( $customer_id, 'last_name', $value );
+						update_user_meta( $customer_id, 'billing_last_name', $value );
+						update_user_meta( $customer_id, 'shipping_last_name', $value );
+					} elseif ( in_array( $key, ['billing_phone', 'phone'], true ) ) {
+						update_user_meta( $customer_id, 'billing_phone', $value );
+					}
+				}
 			}
 
 			// Automatically log in the new user

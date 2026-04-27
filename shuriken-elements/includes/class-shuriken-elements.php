@@ -152,9 +152,20 @@ class Class_Shuriken_Elements {
 		wp_register_script( 'shuriken-mobile-bottom-menu', SHURIKEN_ELEMENTS_URL . 'assets/js/mobile-bottom-menu.js', [ 'jquery', 'elementor-frontend' ], '1.0.0', true );
 		wp_register_script( 'shuriken-popup-checkout', SHURIKEN_ELEMENTS_URL . 'assets/js/popup-checkout.js', [ 'jquery', 'elementor-frontend' ], '1.0.0', true );
 
+        $flow_settings = get_option( 'shuriken_flow_management_settings', [] );
+        $disable_redirect = isset($flow_settings['disable_order_redirect']) ? $flow_settings['disable_order_redirect'] : false;
+
         wp_localize_script( 'shuriken-mobile-bottom-menu', 'shuriken_obj', [
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'nonce'    => wp_create_nonce( 'shuriken_mbm_nonce' ),
+            'disable_order_redirect' => $disable_redirect,
+        ] );
+
+        wp_localize_script( 'shuriken-popup-checkout', 'shuriken_popup_obj', [
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'force_login' => isset($flow_settings['force_login_checkout']) ? $flow_settings['force_login_checkout'] : false,
+            'is_user_logged_in' => is_user_logged_in(),
+            'disable_order_redirect' => $disable_redirect,
         ] );
 	}
 

@@ -5,7 +5,7 @@
  * Plugin URI:  https://shurikenit.com
  * Author:      Mohammad Rafiq Shuvo
  * Author URI:  https://shurikenit.com
- * Version:     1.3.0
+ * Version:     1.4.0
  * Text Domain: shuriken-elements
  *
  * Elementor tested up to: 3.20.0
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'SHURIKEN_ELEMENTS_VERSION', '1.3.0' );
+define( 'SHURIKEN_ELEMENTS_VERSION', '1.4.0' );
 define( 'SHURIKEN_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SHURIKEN_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 
@@ -36,7 +36,7 @@ final class Shuriken_Elements_Plugin {
 	 *
 	 * @var string The plugin version.
 	 */
-	const VERSION = '1.3.0';
+	const VERSION = '1.4.0';
 
 	/**
 	 * Minimum Elementor Version
@@ -143,7 +143,11 @@ final class Shuriken_Elements_Plugin {
         require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-checkout-field-editor.php';
         require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-settings-handler.php';
         require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-admin-post-states.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-account-editor.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-signup-editor.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/admin/class-flow-management.php';
         require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-wc-checkout-fields.php';
+        require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-order-ajax.php';
         require_once SHURIKEN_ELEMENTS_PATH . 'includes/class-shuriken-url-blocker.php';
         
         // New Redirect Management Files
@@ -166,8 +170,20 @@ final class Shuriken_Elements_Plugin {
         // Initialize Checkout Field Editor Admin
         \ShurikenElements\Admin\Class_Checkout_Field_Editor::instance();
 
+        // Initialize Account Editor Admin
+        \ShurikenElements\Admin\Class_Account_Editor::instance();
+
+        // Initialize Signup Editor Admin
+        \ShurikenElements\Admin\Class_Signup_Editor::instance();
+
+        // Initialize Flow Management Admin
+        \ShurikenElements\Admin\Class_Flow_Management::instance();
+
         // Initialize WooCommerce Frontend Checkout Fields logic
         \ShurikenElements\Class_Shuriken_WC_Checkout_Fields::instance();
+
+        // Initialize Order AJAX Handler
+        \ShurikenElements\Class_Order_Ajax::instance();
 
         // Initialize URL Blocker
         \ShurikenElements\Class_Shuriken_URL_Blocker::instance();

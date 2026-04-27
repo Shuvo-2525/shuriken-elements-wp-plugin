@@ -1,6 +1,6 @@
 # Shuriken Elements
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 **Author:** Mohammad Rafiq Shuvo
 **Tested up to Elementor:** 3.20.0
 **Requires PHP:** 7.4+
@@ -67,6 +67,15 @@ A professional-grade checkout field manager built directly into your WordPress a
 ---
 
 ## 📋 Changelog
+
+### Version 1.4.0
+*   **New Feature:** Introduced **Track Order Feature** allowing users to check order status in real-time via AJAX.
+*   **New Feature:** Added **Floating Cart Widget** for desktop, syncing seamlessly with the mobile cart sidebar.
+*   **New Feature:** Implemented **Checkout Redirect Settings** toggle for greater control over user flow.
+*   **Improvement:** Enhanced **Checkout UI** with refined WooCommerce table styling for a premium look.
+*   **Improvement:** Added **Widget Settings Editor Link** in Popup Checkout for clearer administrative workflow.
+*   **Fix:** Resolved **Checkout Login State** issues ensuring smooth authentication and redirection during checkout.
+*   **Fix:** Fixed **Signup Modal Functionality** to properly sync custom registration fields to WooCommerce billing meta.
 
 ### Version 1.3.0
 *   **New Feature:** Implemented **Dynamic Mobile Account Handler** with AJAX-powered navigation for all WooCommerce endpoints (Orders, Addresses, Account Details).

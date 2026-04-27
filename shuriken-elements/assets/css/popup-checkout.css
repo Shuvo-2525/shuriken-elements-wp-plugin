@@ -226,3 +226,82 @@
  .shuriken-popup-checkout-container .checkout_coupon .button:hover {
      background-color: #2980b9;
  }
+
+ /* Modern Table UI for Checkout and Order Details */
+ .shuriken-popup-checkout-container table.shop_table {
+     display: table !important;
+     width: 100% !important;
+     border-collapse: separate !important;
+     border-spacing: 0 !important;
+     border: 1px solid #eaeaea !important;
+     border-radius: 12px !important;
+     overflow: hidden !important;
+     margin-bottom: 25px;
+     box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+ }
+ .shuriken-popup-checkout-container table.shop_table thead,
+ .shuriken-popup-checkout-container table.shop_table tbody,
+ .shuriken-popup-checkout-container table.shop_table tfoot {
+     display: table-row-group !important;
+     width: 100% !important;
+ }
+ .shuriken-popup-checkout-container table.shop_table tr {
+     display: table-row !important;
+     width: 100% !important;
+ }
+ .shuriken-popup-checkout-container table.shop_table th,
+ .shuriken-popup-checkout-container table.shop_table td {
+     display: table-cell !important;
+     border-top: none !important;
+     border-left: none !important;
+     border-right: 1px solid #eaeaea !important;
+     border-bottom: 1px solid #eaeaea !important;
+ }
+ .shuriken-popup-checkout-container table.shop_table th:last-child,
+ .shuriken-popup-checkout-container table.shop_table td:last-child {
+     border-right: none !important;
+ }
+ .shuriken-popup-checkout-container table.shop_table tbody tr:last-child th,
+ .shuriken-popup-checkout-container table.shop_table tbody tr:last-child td {
+     /* Usually tfoot follows, but just in case */
+ }
+ .shuriken-popup-checkout-container table.shop_table tfoot tr:last-child th,
+ .shuriken-popup-checkout-container table.shop_table tfoot tr:last-child td {
+     border-bottom: none !important;
+ }
+ 
+ .shuriken-popup-checkout-container table.shop_table th {
+     background-color: #f8f9fa;
+     padding: 16px 20px;
+     font-weight: 600;
+     color: #333;
+     text-align: left;
+ }
+ .shuriken-popup-checkout-container table.shop_table td {
+     padding: 16px 20px;
+     color: #555;
+     vertical-align: middle;
+     background-color: #fff;
+ }
+ .shuriken-popup-checkout-container table.shop_table th.product-name {
+     width: 60% !important;
+ }
+ .shuriken-popup-checkout-container table.shop_table th.product-total {
+     width: 40% !important;
+ }
+ .shuriken-popup-checkout-container table.shop_table tfoot th,
+ .shuriken-popup-checkout-container table.shop_table tfoot td {
+     background-color: #fafafa;
+     font-weight: 600;
+     color: #222;
+ }
+ .shuriken-popup-checkout-container table.shop_table .product-name {
+     font-weight: 500;
+     color: #1a1a1a;
+ }
+ .shuriken-popup-checkout-container table.shop_table .product-total,
+ .shuriken-popup-checkout-container table.shop_table tfoot th,
+ .shuriken-popup-checkout-container table.shop_table tfoot td {
+     text-align: right;
+ }
+

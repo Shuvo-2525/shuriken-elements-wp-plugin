@@ -23,7 +23,10 @@
             var $profileContainer = $scope.find('.shuriken-mbm-profile-drawer, .shuriken-mbm-profile-popup-container');
             if ($profileContainer.length) $profileContainer.removeClass('is-active');
             var $profileOverlay = $scope.find('.shuriken-mbm-profile-overlay');
-            if ($profileOverlay.length) $profileOverlay.removeClass('is-active');
+            if ($profileOverlay.length) {
+                $profileOverlay.removeClass('is-active');
+                window.shuriken_auth_from_checkout = false;
+            }
 
             $('body').css('overflow', '');
             
@@ -438,9 +441,22 @@
                         if (response.data.new_nonce) {
                             nonce = response.data.new_nonce;
                         }
+                        if (typeof shuriken_popup_obj !== 'undefined') {
+                            shuriken_popup_obj.is_user_logged_in = true;
+                        }
                         $msg.addClass('success').html(msgText);
-                        // Reload content to show dashboard
-                        setTimeout(loadProfileContent, 1000);
+                        
+                        if (window.shuriken_auth_from_checkout) {
+                            window.shuriken_auth_from_checkout = false;
+                            setTimeout(function() {
+                                $('.shuriken-mbm-profile-overlay, .shuriken-mbm-profile-drawer, .shuriken-mbm-profile-popup-container').removeClass('is-active');
+                                $('body').css('overflow', '');
+                                $(document.body).trigger('shuriken_auth_success_from_checkout');
+                            }, 1000);
+                        } else {
+                            // Reload content to show dashboard
+                            setTimeout(loadProfileContent, 1000);
+                        }
                     } else {
                         $msg.addClass('error').html(response.data);
                         $btn.prop('disabled', false).removeClass('loading');
@@ -467,21 +483,32 @@
 
                 $btn.prop('disabled', true).addClass('loading');
 
-                $.post(ajaxUrl, {
-                    action: 'shuriken_ajax_register',
-                    email: $form.find('input[name="email"]').val(),
-                    username: $form.find('input[name="username"]').val(),
-                    password: password,
-                    security: $form.find('#shuriken-register-nonce').val()
-                }, function(response) {
+                var formData = $form.serializeArray();
+                formData.push({ name: 'action', value: 'shuriken_ajax_register' });
+                formData.push({ name: 'security', value: $form.find('#shuriken-register-nonce').val() });
+
+                $.post(ajaxUrl, $.param(formData), function(response) {
                     if ( response.success ) {
                         var msgText = response.data.message ? response.data.message : response.data;
                         if (response.data.new_nonce) {
                             nonce = response.data.new_nonce;
                         }
+                        if (typeof shuriken_popup_obj !== 'undefined') {
+                            shuriken_popup_obj.is_user_logged_in = true;
+                        }
                         $msg.addClass('success').html(msgText);
-                        // Reload content to show dashboard
-                        setTimeout(loadProfileContent, 1000);
+                        
+                        if (window.shuriken_auth_from_checkout) {
+                            window.shuriken_auth_from_checkout = false;
+                            setTimeout(function() {
+                                $('.shuriken-mbm-profile-overlay, .shuriken-mbm-profile-drawer, .shuriken-mbm-profile-popup-container').removeClass('is-active');
+                                $('body').css('overflow', '');
+                                $(document.body).trigger('shuriken_auth_success_from_checkout');
+                            }, 1000);
+                        } else {
+                            // Reload content to show dashboard
+                            setTimeout(loadProfileContent, 1000);
+                        }
                     } else {
                         $msg.addClass('error').html(response.data);
                         $btn.prop('disabled', false).removeClass('loading');
@@ -497,6 +524,78 @@
         // Initialize texts on load
         updateCartButtonTexts();
 
+        // Track Order Implementation
+        var $trackOrderTriggers = $scope.find('.shuriken-mbm-trigger-track-order');
+        var $trackOrderContainer = $scope.find('.shuriken-mbm-track-order-drawer, .shuriken-mbm-track-order-popup-container');
+        var $trackOrderOverlay = $scope.find('.shuriken-mbm-track-order-overlay');
+        var $trackOrderForm = $scope.find('#shuriken-track-order-form');
+        var $trackOrderResults = $scope.find('.shuriken-track-order-results');
+        var $trackOrderMsg = $scope.find('.shuriken-track-order-message');
+
+        if ( $trackOrderTriggers.length && $trackOrderContainer.length ) {
+            $trackOrderTriggers.on('click', function(e) {
+                e.preventDefault();
+                openUI($trackOrderContainer);
+                $trackOrderOverlay.addClass('is-active');
+            });
+        }
+
+        $trackOrderOverlay.on('click', function() {
+            closeUI();
+            if ($trackOrderContainer.length) $trackOrderContainer.removeClass('is-active');
+            $trackOrderOverlay.removeClass('is-active');
+        });
+        
+        $trackOrderContainer.find('.shuriken-mbm-close-ui').on('click', function() {
+             closeUI();
+             $trackOrderContainer.removeClass('is-active');
+             $trackOrderOverlay.removeClass('is-active');
+        });
+
+        if ( $trackOrderForm.length ) {
+            $trackOrderForm.on('submit', function(e) {
+                e.preventDefault();
+                var $form = $(this);
+                var $btn = $form.find('button[type="submit"]');
+                var orderId = $form.find('input[name="order_id"]').val();
+                var orderEmail = $form.find('input[name="order_email"]').val();
+
+                $trackOrderMsg.html('').removeClass('error success');
+                $trackOrderResults.html('<div class="shuriken-mbm-loading" style="padding: 20px;"><div class="shuriken-mbm-loader"></div></div>');
+                $btn.prop('disabled', true).addClass('loading');
+
+                $.post(ajaxUrl, {
+                    action: 'shuriken_track_order',
+                    order_id: orderId,
+                    order_email: orderEmail
+                }, function(response) {
+                    $btn.prop('disabled', false).removeClass('loading');
+                    
+                    if ( response.success ) {
+                        $trackOrderResults.html(response.data.html).hide().fadeIn(300);
+                        $form.slideUp();
+                        
+                        // Add back button
+                        var $backBtn = $('<button class="shuriken-mbm-back-btn" style="background: none; border: none; color: var(--shuriken-mbm-item-active-color, #0073aa); font-weight: 600; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 15px;"><i class="fas fa-arrow-left"></i> Track Another Order</button>');
+                        $trackOrderResults.prepend($backBtn);
+                        
+                        $backBtn.on('click', function() {
+                            $trackOrderResults.html('');
+                            $form.find('input[name="order_id"]').val('');
+                            $form.slideDown();
+                        });
+                    } else {
+                        $trackOrderResults.html('');
+                        $trackOrderMsg.addClass('error').html(response.data);
+                    }
+                }).fail(function() {
+                    $btn.prop('disabled', false).removeClass('loading');
+                    $trackOrderResults.html('');
+                    $trackOrderMsg.addClass('error').html('An error occurred while tracking your order. Please try again.');
+                });
+            });
+        }
+
         // Intercept WooCommerce Checkout Redirect for Shuriken Popup
         $.ajaxSetup({
             dataFilter: function(data, type) {
@@ -506,7 +605,7 @@
                         // If it's a success, it's a redirect, and the checkout popup is visible
                         if (json.result === 'success' && json.redirect && json.redirect.indexOf('order-received') !== -1) {
                             var $checkoutPopup = $('.shuriken-popup-checkout-container');
-                            if ($checkoutPopup.length && $checkoutPopup.is(':visible')) {
+                            if ($checkoutPopup.length && $checkoutPopup.is(':visible') && (shuriken_obj.disable_order_redirect == "1" || shuriken_obj.disable_order_redirect === true)) {
                                 json.redirect = '#shuriken-order-received=' + encodeURIComponent(json.redirect);
                                 return JSON.stringify(json);
                             }
@@ -525,7 +624,7 @@
                 var $checkoutPopup = $('.shuriken-popup-checkout-container');
                 var $checkoutBody = $checkoutPopup.find('.shuriken-popup-checkout-body');
                 
-                if ($checkoutBody.length) {
+                if ($checkoutBody.length && (shuriken_obj.disable_order_redirect == "1" || shuriken_obj.disable_order_redirect === true)) {
                     $checkoutBody.html('<div style="padding: 40px; text-align: center;"><div class="shuriken-mbm-loader" style="margin: 0 auto;"></div><p style="margin-top: 15px;">Processing your order...</p></div>');
                     // Fetch the order received page and extract the content
                     $.get(realUrl, function(html) {
